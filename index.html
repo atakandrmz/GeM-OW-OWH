@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Loop-closure dashboard</title>
+<style>
+:root{
+  --bg:#0f1318; --panel:#171c23; --panel2:#1d232c; --line:#2a323d; --text:#e6e9ee; --muted:#8c97a6;
+  --good:#3fb950; --bad:#f85149; --warn:#f0b429; --accent:#58a6ff; --gt:#c9d1d9;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:13px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;align-items:center;gap:18px;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{font-size:15px;margin:0;font-weight:600}
+.tabs{display:flex;gap:4px}
+.tab{padding:5px 12px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer}
+.tab.on{background:var(--panel2);color:var(--text);border-color:#3a4553}
+select,button,input[type=range]{font:inherit}
+select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:5px 8px;max-width:100%}
+button{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:#4a5767}
+button.primary{background:#1f6feb;border-color:#1f6feb}
+#app{display:grid;grid-template-columns:420px 1fr;gap:10px;padding:10px;height:calc(100% - 46px);min-height:640px}
+.col{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:0;min-width:0}
+.card h2{margin:0 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row label{color:var(--muted)}
+table{border-collapse:collapse;width:100%}
+td,th{padding:3px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+td:first-child,th:first-child{text-align:left}
+#tRes td:last-child,#tSeq td:last-child{white-space:normal}
+#cmpTable th{white-space:normal;vertical-align:bottom;text-align:right}
+#cmpTable td{padding:4px 7px}
+th{color:var(--muted);font-weight:500}
+.k{color:var(--muted)}
+.tp{color:var(--good)} .fp{color:var(--bad)}
+.badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600}
+.b-tp{background:rgba(63,185,80,.18);color:var(--good)} .b-fp{background:rgba(248,81,73,.18);color:var(--bad)}
+.b-na{background:#2a323d;color:var(--muted)} .b-acc{background:rgba(240,180,41,.18);color:var(--warn)}
+canvas{width:100%;display:block}
+#left-top{flex:0 0 auto}
+#pairs{flex:1 1 auto;display:flex;flex-direction:column}
+#pairhead{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin-bottom:6px}
+#imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1 1 auto;min-height:0}
+.imgbox{border:4px solid var(--line);border-radius:6px;background:#0b0e12;position:relative;display:flex;align-items:center;justify-content:center;min-height:120px;overflow:hidden}
+.imgbox img{max-width:100%;max-height:100%;display:block}
+.imgbox .cap{position:absolute;left:4px;top:4px;background:rgba(0,0,0,.65);padding:1px 6px;border-radius:4px;font-size:11px}
+.imgbox.tp{border-color:var(--good)} .imgbox.fp{border-color:var(--bad)}
+.noimg{color:var(--muted);text-align:center;padding:10px}
+#right-top{flex:1 1 56%;display:flex;flex-direction:column}
+#right-bot{flex:1 1 44%;display:flex;flex-direction:column}
+.cv{flex:1 1 auto;min-height:0;position:relative}
+.cv canvas{position:absolute;inset:0;height:100%}
+.ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.ctl input[type=range]{width:240px}
+.warn{background:rgba(240,180,41,.12);border:1px solid rgba(240,180,41,.4);color:var(--warn);padding:4px 8px;border-radius:6px;margin-top:6px}
+.leg{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+.leg i{display:inline-block;width:18px;height:0;border-top:3px solid;vertical-align:middle;margin-right:4px}
+#cmp{display:none;padding:10px;overflow:auto;height:calc(100% - 46px)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cell{border-radius:3px;padding:2px 6px}
+.matrix td{padding:0}.matrix td div{padding:4px 6px;text-align:right}
+.alrow{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+.alrow button{padding:3px 9px}
+.alrow button.on{background:var(--accent,#1f6feb);border-color:var(--accent,#1f6feb);color:#fff}
+.hint{color:var(--muted);font-size:12px;margin-top:4px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Loop-closure retrieval dashboard <span class="k" style="font-size:11px;font-weight:400">v7</span></h1>
+  <div class="tabs"><button class="tab on" id="tab-ex">Sequence explorer</button><button class="tab" id="tab-cmp">Compare configurations</button></div>
+  <span class="k" id="status"></span>
+</header>
+
+<div id="app">
+  <div class="col">
+    <div class="card" id="left-top">
+      <div class="row" style="margin-bottom:8px">
+        <label>Sequence</label><select id="selSeq" style="flex:1"></select>
+      </div>
+      <div class="row" style="margin-bottom:8px">
+        <label>Configuration</label><select id="selCfg" style="flex:1"></select>
+      </div>
+      <div class="row" id="repBox" style="margin-bottom:8px;display:none"><label>Repetition</label><select id="selRep" style="flex:1"></select></div>
+      <h2>Sequence</h2>
+      <table id="tSeq"></table>
+      <h2 style="margin-top:10px">Result <span class="k" id="resNote"></span></h2>
+      <table id="tRes"></table>
+      <div id="warns"></div>
+    </div>
+    <div class="card" id="pairs">
+      <h2>Detected loop pair</h2>
+      <div id="pairhead"></div>
+      <div id="imgs">
+        <div class="imgbox" id="imgA"></div>
+        <div class="imgbox" id="imgB"></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button id="pPrev">&#9664;</button><button id="pNext">&#9654;</button>
+        <select id="pFilter">
+          <option value="all">all detected</option><option value="acc">accepted only</option><option value="rej">rejected only</option>
+          <option value="tp">TP only</option><option value="fp">FP only</option>
+        </select>
+        <label><input type="checkbox" id="pFollow" checked> follow animation</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card" id="right-top">
+      <div class="alrow" title="The Umeyama (SE3, no scale) alignment of the estimate to the ground truth is fitted on the first N matched poses of the open-loop VIO and applied unchanged to every trajectory and ATE value">
+        <span class="k">Umeyama alignment on first</span>
+        <span id="alBtns"></span>
+        <span class="k" id="alInfo"></span>
+      </div>
+      <div class="ctl">
+        <button title="start / pause the animation" id="bPlay" class="primary">&#9654; Play</button>
+        <button title="show the full sequence (end result)" id="bEnd">End result</button>
+        <input type="range" id="slider" min="0" max="1000" value="1000">
+        <span id="tlabel" class="k"></span>
+        <label>speed <select id="speed"><option>1</option><option>2</option><option selected>5</option><option>10</option><option>20</option><option>50</option></select>&times;</label>
+        <label>view <select id="plane"><option value="xz" selected>x-z</option><option value="xy">x-y</option><option value="yz">y-z</option></select></label>
+        <label><input type="checkbox" id="cGhost" checked> before-closure ghost</label>
+        <label><input type="checkbox" id="cRej"> rejected pairs</label>
+        <label><input type="checkbox" id="cOpen"> open-loop VIO</label>
+        <label title="rotate the view so the long axis of the trajectory fills the panel"><input type="checkbox" id="cRot" checked> rotate to fit</label>
+        <label title="stretch to the panel (distorts the aspect ratio)"><input type="checkbox" id="cStretch"> stretch</label>
+        <button id="bReset" title="reset zoom and pan">Reset view</button>
+      </div>
+      <div class="cv"><canvas id="cvTraj"></canvas></div>
+      <div class="leg" style="margin-top:6px">
+        <span><i style="border-color:#c9d1d9"></i>ground truth</span>
+        <span><i style="border-color:#58a6ff"></i>estimate (after closure)</span>
+        <span><i style="border-color:#f0883e;border-top-style:dashed"></i>estimate just before closure</span>
+        <span><i style="border-color:#3fb950"></i>accepted &amp; TP</span>
+        <span><i style="border-color:#f85149"></i>accepted &amp; FP</span>
+        <span><i style="border-color:#6b7684;border-top-style:dotted"></i>rejected</span>
+      </div>
+    </div>
+    <div class="card" id="right-bot">
+      <h2>ATE evolution &mdash; running ATE (Umeyama on <span id="alTitle">first 100</span> poses); arrows: <span class="tp">green = closure lowered ATE</span>, <span class="fp">red = raised it</span> &middot; click to seek</h2>
+      <div class="cv"><canvas id="cvAte"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div id="cmp">
+  <div class="row" style="margin-bottom:10px">
+    <label>Scope</label><select id="cmpSeq"></select>
+    <span class="hint">ATE change = final ATE &minus; ATE of the same run without loop closure (negative = better). Sequences with a failed time offset or a diverged VIO are excluded from means.</span>
+  </div>
+  <div class="card" style="margin-bottom:10px"><h2>Filters &mdash; every factor of the v2 experiments (pooling, points, sign-split, verification, pose-graph DoF)</h2><div class="row" id="cmpFilters"></div></div>
+  <div class="card" style="margin-bottom:10px"><h2>All configurations (click a column header to sort)</h2><div style="overflow:auto"><table id="cmpTable"></table></div></div>
+  <div class="grid2">
+    <div class="card"><h2>ATE change by configuration</h2><div style="height:300px;position:relative;overflow:auto"><canvas id="cvBar" style="position:absolute;inset:0;height:100%"></canvas></div></div>
+    <div class="card"><h2>Applied loops: true vs false positives (pgls &ge; 0.5) and true loops missed</h2><div style="height:300px;position:relative"><canvas id="cvTpfp" style="position:absolute;inset:0;height:100%"></canvas></div></div>
+  </div>
+  <div class="card" style="margin-top:10px" id="cardMatrix"><h2>ATE change per sequence &times; configuration (click a cell to open it)</h2><div style="overflow:auto"><table class="matrix" id="matrix"></table></div></div>
+  <div class="card" style="margin-top:10px" id="cardOverlay"><h2 id="overlayTitle">Running ATE of the selected configurations</h2><div style="height:320px;position:relative"><canvas id="cvOverlay" style="position:absolute;inset:0;height:100%"></canvas></div><div class="leg" id="overlayLeg"></div></div>
+</div>
+
+<script src="data/summary.js"></script>
+<script>
+"use strict";
+const SUM = window.SUMMARY || {seqs:[],meta:{},data:{}};
+const MNAME = {dbow2:"DBoW2",netvlad:"NetVLAD",xfeat_2d:"XFeat 2D",xfeat_1d:"XFeat 1D",xfeat_gem:"XFeat GeM",xfeat_gem_ow:"GeM-OW",xfeat_gem_owh:"GeM-OWH"};
+const MCOL = {dbow2:"#4c9be8",netvlad:"#f58518",xfeat_2d:"#54c06b",xfeat_1d:"#c58be0",xfeat_gem:"#ee6a6a",xfeat_gem_ow:"#e3b341",xfeat_gem_owh:"#2dd4bf"};
+const SETNAME = {default:"default thr.",t100:"100% recall thr."};
+/* configurations: v1 (method x threshold set) + any number of v2 runs; the list comes from the build (SUM.cfgs) */
+let CFGS = []; const CM = {};
+(function(){
+  let list = SUM.cfgs;
+  if(!list||!list.length){ list=[]; ["dbow2","netvlad","xfeat_2d","xfeat_1d","xfeat_gem"].forEach(m=>["default","t100"].forEach(s=>
+    list.push({key:m+"|"+s,group:"v1",method:m,set:s,dof:4,label:MNAME[m]+" · "+SETNAME[s],short:MNAME[m]+(s==="t100"?" · 100%":" · def"),file:m+"_"+s}))); }
+  list.forEach(m=>{CM[m.key]=m; CFGS.push(m.key);});
+})();
+const DOFN = {"4":"4-DoF","6":"6-DoF (VINS weights)","6m":"6-DoF (matched weights)"};
+const cfgLabel = k=>CM[k]?CM[k].label:k;
+const cfgShort = k=>CM[k]?CM[k].short:k;
+const mOf = k=>CM[k]?CM[k].method:k.split("|")[0];
+const isLight = k=>{const m=CM[k]; return !!m&&(m.set==="t100"||m.dof===6);};   // light bars: 100%-recall thresholds or 6-DoF
+const $ = id=>document.getElementById(id);
+const fx = (v,d=2)=> (v===null||v===undefined||Number.isNaN(v))?"–":Number(v).toFixed(d);
+const css = n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+const S = {seq:null, rep:1, cfg:CFGS[0], t:Infinity, playing:false, speed:5, plane:"xz", align:"100", pairIdx:-1, last:0};
+let D = null;       // current sequence data
+let C = null;       // current config data
+let bounds = null;
+const loading = {};
+
+/* ------------------------------------------------------------------ helpers */
+function setupCanvas(cv){
+  const r = cv.getBoundingClientRect(), d = window.devicePixelRatio||1;
+  if (cv.width!==Math.round(r.width*d) || cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);}
+  const c = cv.getContext("2d"); c.setTransform(d,0,0,d,0,0); return [c, r.width, r.height];
+}
+function bsearch(a, v){ // last index with a[i] <= v
+  let lo=0, hi=a.length-1, r=-1;
+  while(lo<=hi){const m=(lo+hi)>>1; if(a[m]<=v){r=m;lo=m+1}else hi=m-1}
+  return r;
+}
+function posAt(p, t, ax, ay){ // interpolated position on a path {t,x,y,z}
+  const n=p.t.length; if(!n) return null;
+  if(t<=p.t[0]) return [p[ax][0],p[ay][0]];
+  if(t>=p.t[n-1]) return [p[ax][n-1],p[ay][n-1]];
+  const i=bsearch(p.t,t), f=(t-p.t[i])/Math.max(1e-9,p.t[i+1]-p.t[i]);
+  return [p[ax][i]+f*(p[ax][i+1]-p[ax][i]), p[ay][i]+f*(p[ay][i+1]-p[ay][i])];
+}
+function loadCfg(seq,key,rp){
+  rp=rp||1; const d=window.SEQ[seq], ck=rp>1?key+"|r"+rp:key; if(d.configs[ck]) return Promise.resolve(d.configs[ck]);
+  const id=seq+"|"+ck, fn=CM[key].file+(rp>1?".r"+rp:"");
+  return new Promise((res,rej)=>{
+    const done=()=>{const c=window.CFGD[id]; d.configs[ck]=c; applyAlignCfg(c,S.align); res(c);};
+    if(window.CFGD&&window.CFGD[id]) return done();
+    const s=document.createElement("script"); s.src="data/"+seq+"/"+fn+".js"; s.onload=done;
+    s.onerror=()=>rej(new Error("cannot load data/"+seq+"/"+fn+".js")); document.head.appendChild(s);
+  });
+}
+function loadSeq(seq){
+  return new Promise((res,rej)=>{
+    if(window.SEQ && window.SEQ[seq]) return res(applyAlignSeq(window.SEQ[seq]));
+    if(loading[seq]) return loading[seq].then(()=>res(applyAlignSeq(window.SEQ[seq])));
+    const s=document.createElement("script"); s.src="data/"+seq+".js";
+    loading[seq]=new Promise(r2=>{s.onload=()=>r2(window.SEQ[seq]);});
+    s.onload=()=>res(applyAlignSeq(window.SEQ[seq])); s.onerror=()=>rej(new Error("cannot load data/"+seq+".js"));
+    document.head.appendChild(s);
+  });
+}
+/* ------------------------------------------------------------------ alignment windows */
+const ALIGNS=["100","150","200","250","all"];
+function xf(p,T){ // rigid map of a path {t,x,y,z}
+  const n=p.t.length, x=new Array(n), y=new Array(n), z=new Array(n);
+  for(let i=0;i<n;i++){const a=p.x[i],b=p.y[i],c=p.z[i];
+    x[i]=T[0]*a+T[1]*b+T[2]*c+T[9]; y[i]=T[3]*a+T[4]*b+T[5]*c+T[10]; z[i]=T[6]*a+T[7]*b+T[8]*c+T[11];}
+  return {t:p.t,x,y,z};
+}
+function applyAlignCfg(c,key){
+  if(!c.al||!c.al[key]) return;
+  if(!c._b) c._b={open:c.open,final:c.final,ob:c.opts.map(o=>({before:o.before,after:o.after}))};
+  if(c._k===key) return;
+  const A=c.al[key], T=A.T; c._k=key;
+  c.open=xf(c._b.open,T); c.final=xf(c._b.final,T);
+  c.ate_final=A.ate_final; c.ate_open=A.ate_open; c.c_open=A.c_open; c.c_final=A.c_final;
+  c.opts.forEach((o,i)=>{ const q=A.o[i]; if(!q) return;
+    o.before=xf(c._b.ob[i].before,T); o.after=xf(c._b.ob[i].after,T);
+    o.ate_before=q.ate_before; o.ate_after=q.ate_after; o.cur=q.cur; });
+}
+function applyAlignSeq(d){ if(d) Object.keys(d.configs).forEach(k=>applyAlignCfg(d.configs[k],S.align)); return d; }
+function applyAlignSummary(){
+  SUM.seqs.forEach(s=>{ const dd=SUM.data[s]||{}; Object.keys(dd).forEach(k=>{ const r=dd[k]; if(r.al&&r.al[S.align]){r.ate=r.al[S.align].ate; r.ate_open=r.al[S.align].ate_open;} }); });
+}
+function setAlign(key){
+  S.align=key; applyAlignSummary();
+  Object.keys(window.SEQ||{}).forEach(k=>applyAlignSeq(window.SEQ[k]));
+  alignButtons();
+  if(D){ const v=S.view; computeBounds(); if(v) S.view=v; }
+  if($("cmp").style.display==="block") buildCmp(); 
+  renderAll();
+}
+function alignButtons(){
+  $("alBtns").innerHTML=ALIGNS.map(a=>`<button data-a="${a}" class="${a===S.align?"on":""}">${a==="all"?"All frames":a+" frames"}</button>`).join("");
+  $("alBtns").querySelectorAll("button").forEach(b=>b.onclick=()=>setAlign(b.dataset.a));
+  const sp=D&&D.align_spans&&D.align_spans[S.align];
+  $("alTitle").textContent = S.align==="all" ? "all" : "first "+S.align;
+  $("alInfo").textContent = sp ? `(fit window ${fx(sp[0]-D.t0,1)}–${fx(sp[1]-D.t0,1)} s)` : "";
+}
+function pairsOf(c){ if(!c._sorted){c.pairs.sort((a,b)=>a.t-b.t); c._sorted=true;} return c.pairs; }
+function activeOpt(c, t){ // last closure with t_j <= t
+  let r=-1; for(let i=0;i<c.opts.length;i++){ if(c.opts[i].t<=t) r=i; } return r;
+}
+function estPath(c, t){
+  const j=activeOpt(c,t);
+  return j<0 ? c.open : c.opts[j].after;
+}
+
+/* ------------------------------------------------------------------ explorer: tables */
+function fillSeqTable(){
+  const m=SUM.meta[S.seq]||{};
+  $("tSeq").innerHTML =
+   `<tr><td class="k">Trajectory length (GT)</td><td>${fx(D.gt_len,1)} m</td></tr>
+    <tr><td class="k">Sequence duration</td><td>${fx(D.duration,1)} s</td></tr>
+    <tr><td class="k">Image frames / pgls matrix</td><td>${D.n_frames} / ${D.pgls_n||"–"}${D.pgls_mapping==="proportional"?" ⚠":""}</td></tr>`;
+  $("warns").innerHTML = (D.warn||[]).map(w=>`<div class="warn">⚠ ${w}</div>`).join("") +
+     (D.pgls_mapping==="proportional"?`<div class="warn">⚠ pgls matrix size differs from the number of image frames – frames were mapped proportionally.</div>`:"") +
+     (D.pgls_n?"":`<div class="warn">⚠ pgls matrix not found – no TP/FP labels.</div>`);
+}
+function stat(pairs){
+  const v=pairs.filter(p=>p.pg!==null).map(p=>p.pg);
+  const n=pairs.length, tp=pairs.filter(p=>p.tp===1).length, fp=pairs.filter(p=>p.tp===0).length;
+  let mean=null,vari=null; if(v.length){mean=v.reduce((a,b)=>a+b,0)/v.length; vari=v.reduce((a,b)=>a+(b-mean)*(b-mean),0)/v.length;}
+  return {n,tp,fp,mean,vari};
+}
+function currentAte(c,t){
+  // running ATE of the active estimate at time t
+  const j=activeOpt(c,t);
+  const cur = j<0 ? c.c_open : c.opts[j].cur;
+  if(!cur.t.length) return null;
+  const i=bsearch(cur.t, Math.min(t, cur.t[cur.t.length-1])); return cur.a[Math.max(0,i)];
+}
+function cfgRows(){
+  const m=CM[S.cfg]||{}, x=C.x||{}, sm=C.summ||{}; let h="";
+  h+=`<tr><td class="k">Configuration</td><td style="white-space:normal">${m.label||S.cfg}</td></tr>`;
+  const sr=SUM.data[S.seq]&&SUM.data[S.seq][S.cfg];
+  if(sr&&sr.n_rep>1) h+=`<tr><td class="k">Repetitions</td><td>${sr.n_rep} · ATE mean ${fx(sr.ate,3)} ± ${fx(sr.ate_std,3)} · best ${fx(sr.ate_best,3)} m <span class="k">(showing repetition ${S.rep})</span></td></tr>`;
+  if(m.group==="v2") h+=`<tr><td class="k">Pose graph / points / verify</td><td>${DOFN[m.dofv]||m.dof+"-DoF"} · ${m.pts||"–"} · ss${m.ss} · ${m.verify}</td></tr>`;
+  const ms=(sm.mean_ms!==""&&sm.mean_ms!==undefined)?+sm.mean_ms:x.retr_ms;
+  if(ms!==undefined&&ms!==null&&isFinite(ms)) h+=`<tr><td class="k">Retrieval time</td><td>${fx(ms,1)} ms / keyframe</td></tr>`;
+  if(x.lg) h+=`<tr><td class="k">LighterGlue funnel</td><td>${x.lg.n} candidates → ${x.lg.passed} pass epipolar <span class="k">(⌀ ${fx(x.lg.matches,0)} matches, ratio ${fx(x.lg.epi_ratio,2)})</span></td></tr>`;
+  if(x.outcomes) h+=`<tr><td class="k">Candidate outcomes</td><td style="white-space:normal"><span class="k">${Object.keys(x.outcomes).sort((a,b)=>x.outcomes[b]-x.outcomes[a]).map(o=>o.replace(/_/g," ")+" "+x.outcomes[o]).join(" · ")}</span></td></tr>`;
+  if(x.files&&x.files.length) h+=`<tr><td class="k">Saved diagnostics</td><td style="white-space:normal"><span class="k">${x.files.join(", ")}</span></td></tr>`;
+  return h;
+}
+function fillResTable(){
+  const t=S.t, pr=pairsOf(C).filter(p=>p.t<=t);
+  const det=stat(pr), acc=stat(pr.filter(p=>p.ok));
+  const end = !isFinite(t) || t>=D.duration;
+  const ate = end ? C.ate_final : currentAte(C,t);
+  const nclos = C.opts.filter(o=>o.t<=t).length;
+  $("resNote").textContent = end ? "(end of sequence)" : `(up to t = ${fx(t,1)} s)`;
+  const pm=(s)=> s.mean===null?"–":`${fx(s.mean,3)} ± ${fx(Math.sqrt(s.vari),3)} <span class="k">(var ${fx(s.vari,4)})</span>`;
+  $("tRes").innerHTML =
+   `<tr><td class="k">Overall ATE ${end?"":"(running)"}</td><td><b>${fx(ate,3)} m</b> <span class="k">open-loop ${fx(C.ate_open,3)} m</span></td></tr>
+    <tr><td class="k">Detected loops</td><td>${det.n} <span class="k">(<span class="tp">TP ${det.tp}</span> / <span class="fp">FP ${det.fp}</span>)</span></td></tr>
+    <tr><td class="k">Applied loops (passed geometry)</td><td>${acc.n} <span class="k">(<span class="tp">TP ${acc.tp}</span> / <span class="fp">FP ${acc.fp}</span>)</span></td></tr>
+    <tr><td class="k">Pose-graph optimisations</td><td>${nclos} <span class="k">(${C.opts.filter(o=>o.t<=t&&o.ate_after<o.ate_before).length} lowered, ${C.opts.filter(o=>o.t<=t&&o.ate_after>=o.ate_before).length} raised ATE)</span></td></tr>
+    <tr><td class="k">Rejected by geometry</td><td>${det.n-acc.n} <span class="k">(<span class="tp">TP missed ${det.tp-acc.tp}</span> / <span class="fp">FP avoided ${det.fp-acc.fp}</span>)</span></td></tr>
+    <tr><td class="k">pgls, detected (mean ± std)</td><td>${pm(det)}</td></tr>
+    <tr><td class="k">pgls, applied (mean ± std)</td><td>${pm(acc)}</td></tr>`+cfgRows();
+}
+
+/* ------------------------------------------------------------------ explorer: pair viewer */
+function filteredPairs(){
+  const f=$("pFilter").value, P=pairsOf(C);
+  return P.filter(p=> f==="all"||(f==="acc"&&p.ok)||(f==="rej"&&!p.ok)||(f==="tp"&&p.tp===1)||(f==="fp"&&p.tp===0));
+}
+function thumbHTML(frame, label){
+  const has = D.thumbs && D.thumbs.indexOf(frame)>=0;
+  return (has? `<img src="thumbs/${D.name}/${frame}.jpg" alt="">` : `<div class="noimg">no image<br>frame ${frame}</div>`) + `<div class="cap">${label}</div>`;
+}
+let lastPairKey = "";
+function showPair(p){
+  const A=$("imgA"), B=$("imgB");
+  if(!p){ $("pairhead").innerHTML=`<span class="k">no pair yet</span>`; A.innerHTML=B.innerHTML=""; A.className=B.className="imgbox"; lastPairKey=""; return; }
+  const key=p.t+"|"+p.kf+"|"+p.ko+"|"+S.cfg+"|"+S.seq; if(key===lastPairKey) return; lastPairKey=key;
+  const cls = p.tp===1?"tp":(p.tp===0?"fp":"");
+  A.className=B.className="imgbox "+cls;
+  A.innerHTML=thumbHTML(p.fo,`old · frame ${p.fo} · t=${fx(p.to,1)} s`);
+  B.innerHTML=thumbHTML(p.fn,`new · frame ${p.fn} · t=${fx(p.t,1)} s`);
+  const lab = p.tp===1?`<span class="badge b-tp">TP</span>`:p.tp===0?`<span class="badge b-fp">FP</span>`:`<span class="badge b-na">no label</span>`;
+  const st = p.ok?`<span class="badge b-acc">accepted</span>`:`<span class="badge b-na">rejected: ${String(p.why).replace(/_/g," ")}</span>`;
+  $("pairhead").innerHTML = `${lab} ${st} <b>pgls ${fx(p.pg,3)}</b> <span class="k">retrieval score ${p.sc===null?"–":fx(p.sc,3)} · matches ${p.m} · KF ${p.ko} → ${p.kf}</span>`;
+}
+function updatePairViewer(){
+  const L=filteredPairs(); if(!L.length){showPair(null);return;}
+  if($("pFollow").checked){
+    let r=-1; for(let i=0;i<L.length;i++) if(L[i].t<=S.t) r=i;
+    if(!isFinite(S.t)) r=L.length-1;
+    S.pairIdx = r;
+  } else if(S.pairIdx<0||S.pairIdx>=L.length) S.pairIdx=0;
+  showPair(S.pairIdx>=0?L[S.pairIdx]:null);
+}
+function stepPair(d){
+  const L=filteredPairs(); if(!L.length) return;
+  $("pFollow").checked=false; S.pairIdx=Math.min(L.length-1,Math.max(0,(S.pairIdx<0?0:S.pairIdx)+d));
+  const p=L[S.pairIdx]; if(!S.playing){ S.t=Math.min(p.t, D.duration); $("slider").value=Math.round(1000*S.t/D.duration);}
+  showPair(p); renderAll();
+}
+
+/* ------------------------------------------------------------------ explorer: trajectory */
+function computeBounds(){
+  // view: optional PCA rotation so the long axis of the trajectory lies along the (wide) panel, then fit + zoom/pan
+  const ax=S.plane[0], ay=S.plane[1]; const pts=[];
+  const add=(p)=>{for(let i=0;i<p.t.length;i+=2) pts.push([p[ax][i],p[ay][i]]);};
+  add(D.gt); add(C.final); if($("cOpen").checked) add(C.open);
+  let th=0;
+  if($("cRot").checked && pts.length>3){
+    let mx=0,my=0; pts.forEach(q=>{mx+=q[0];my+=q[1]}); mx/=pts.length; my/=pts.length;
+    let sxx=0,syy=0,sxy=0; pts.forEach(q=>{const a=q[0]-mx,b=q[1]-my; sxx+=a*a; syy+=b*b; sxy+=a*b;});
+    th=0.5*Math.atan2(2*sxy,sxx-syy);       // angle of the principal axis
+  }
+  S.theta=th; const ct=Math.cos(th), st=Math.sin(th);
+  let u0=1e9,u1=-1e9,v0=1e9,v1=-1e9;
+  pts.forEach(q=>{const u=q[0]*ct+q[1]*st, v=-q[0]*st+q[1]*ct; u0=Math.min(u0,u);u1=Math.max(u1,u);v0=Math.min(v0,v);v1=Math.max(v1,v);});
+  const mu=(u1-u0)*0.04+0.3, mv=(v1-v0)*0.04+0.3; bounds=[u0-mu,u1+mu,v0-mv,v1+mv];
+  S.view={z:1,px:0,py:0};
+}
+function niceLen(m){const e=Math.pow(10,Math.floor(Math.log10(m))), f=m/e; return (f>=5?5:f>=2?2:1)*e;}
+function drawTraj(){
+  const [c,W,H]=setupCanvas($("cvTraj")); c.clearRect(0,0,W,H);
+  if(!D||!C) return; if(!bounds) computeBounds();
+  const ax=S.plane[0], ay=S.plane[1], pad=12, ct=Math.cos(S.theta), st=Math.sin(S.theta);
+  const bw=bounds[1]-bounds[0], bh=bounds[3]-bounds[2];
+  const stretch=$("cStretch").checked;
+  let sx=(W-2*pad)/bw, sy=(H-2*pad)/bh;
+  if(!stretch){ sx=sy=Math.min(sx,sy); }
+  const V=S.view, cx=W/2, cy=H/2, mu=(bounds[0]+bounds[1])/2, mv=(bounds[2]+bounds[3])/2;
+  // world (plane coords) -> screen
+  const SC=(x,y)=>{const u=x*ct+y*st, v=-x*st+y*ct; return [cx+V.px+V.z*sx*(u-mu), cy+V.py-V.z*sy*(v-mv)];};
+  S.sc=SC;
+  const poly=(p,tmax,style,w,dash)=>{
+    c.beginPath(); let started=false;
+    for(let i=0;i<p.t.length;i++){ if(p.t[i]>tmax) break; const q=SC(p[ax][i],p[ay][i]); if(!started){c.moveTo(q[0],q[1]);started=true}else c.lineTo(q[0],q[1]);}
+    const e=posAt(p,tmax,ax,ay); if(started&&e&&tmax<p.t[p.t.length-1]){const q=SC(e[0],e[1]); c.lineTo(q[0],q[1]);}
+    c.strokeStyle=style;c.lineWidth=w;c.setLineDash(dash||[]);c.stroke();c.setLineDash([]);
+  };
+  const t = isFinite(S.t)? S.t : D.duration;
+  // ground truth (faint future, solid past)
+  poly(D.gt, 1e9, "rgba(201,209,217,.18)", 1.5);
+  poly(D.gt, t, "#c9d1d9", 2.2);
+  if($("cOpen").checked) poly(C.open, t, "rgba(140,151,166,.7)", 1.2, [4,4]);
+  const est=estPath(C,t), j=activeOpt(C,t);
+  if($("cGhost").checked && j>=0){
+    const age = t - C.opts[j].t, win = D.duration*0.06+3;
+    if(age<=win) poly(C.opts[j].before, C.opts[j].t, "#f0883e", 2, [6,4]);
+  }
+  poly(est, t, "#58a6ff", 2.6);
+  // pairs
+  const P=pairsOf(C), sel=(filteredPairs()[S.pairIdx]||null), showRej=$("cRej").checked;
+  const seg=(p)=>{const a=posAt(est,p.to,ax,ay), b=posAt(est,p.t,ax,ay); return (a&&b)?[SC(a[0],a[1]),SC(b[0],b[1])]:null;};
+  const drawPair=(p,hl)=>{
+    if(!p.ok && !showRej && !hl) return; const sg=seg(p); if(!sg) return;
+    const col = p.ok ? (p.tp===0?"#f85149":(p.tp===1?"#3fb950":"#9aa5b1")) : "rgba(150,160,172,.8)";
+    c.beginPath(); c.moveTo(sg[0][0],sg[0][1]); c.lineTo(sg[1][0],sg[1][1]);
+    c.strokeStyle=col; c.lineWidth=hl?3.5:(p.ok?1.8:1); c.setLineDash(p.ok?[]:[3,3]); c.stroke(); c.setLineDash([]);
+    if(p.ok||hl){ c.fillStyle=col; for(const q of sg){c.beginPath();c.arc(q[0],q[1],hl?4.5:2.8,0,7);c.fill();} }
+  };
+  for(const p of P){ if(p.t>t) break; if(p!==sel) drawPair(p,false); }
+  if(sel && sel.t<=t){
+    const sg=seg(sel);
+    if(sg){ c.beginPath(); c.moveTo(sg[0][0],sg[0][1]); c.lineTo(sg[1][0],sg[1][1]); c.strokeStyle="rgba(255,255,255,.85)"; c.lineWidth=6; c.stroke(); }
+    drawPair(sel,true);
+  }
+  // current positions + start
+  const pe=posAt(est,t,ax,ay), pg=posAt(D.gt,t,ax,ay);
+  if(pg){const q=SC(pg[0],pg[1]);c.fillStyle="#c9d1d9";c.beginPath();c.arc(q[0],q[1],5,0,7);c.fill();}
+  if(pe){const q=SC(pe[0],pe[1]);c.fillStyle="#58a6ff";c.strokeStyle="#fff";c.lineWidth=1.5;c.beginPath();c.arc(q[0],q[1],5,0,7);c.fill();c.stroke();}
+  const q0=SC(D.gt[ax][0],D.gt[ay][0]); c.fillStyle="#3fb950"; c.fillRect(q0[0]-4,q0[1]-4,8,8);
+  c.fillStyle="#8c97a6"; c.font="11px system-ui"; c.fillText("start",q0[0]+7,q0[1]-6);
+  // scale bar (metres along the horizontal screen axis)
+  const mpp=1/(V.z*sx); const L=niceLen(mpp*90), px=L/mpp;
+  c.strokeStyle="#c9d1d9"; c.lineWidth=2; c.beginPath(); c.moveTo(12,H-14); c.lineTo(12+px,H-14); c.moveTo(12,H-18); c.lineTo(12,H-10); c.moveTo(12+px,H-18); c.lineTo(12+px,H-10); c.stroke();
+  c.fillStyle="#c9d1d9"; c.fillText((L>=1?L.toFixed(0):L.toFixed(2))+" m",16+px,H-10);
+  c.fillStyle="#6b7684"; c.fillText(`plane ${S.plane}${$("cRot").checked?" · rotated "+(S.theta*57.296).toFixed(0)+"°":""}${stretch?" · stretched":""} · wheel = zoom, drag = pan, double-click = reset`, 12, 14);
+}
+
+/* ------------------------------------------------------------------ explorer: ATE evolution */
+function drawAte(){
+  const [c,W,H]=setupCanvas($("cvAte")); c.clearRect(0,0,W,H); if(!D||!C) return;
+  const L=46,R=10,T=8,B=26, T1=D.duration, t=isFinite(S.t)?Math.min(S.t,T1):T1;
+  let ymax=0.01; const scan=(cu)=>{for(const a of cu.a) ymax=Math.max(ymax,a);};
+  scan(C.c_open); scan(C.c_final); C.opts.forEach(o=>scan(o.cur)); C.opts.forEach(o=>{ymax=Math.max(ymax,o.ate_before,o.ate_after)});
+  ymax*=1.08; const X=x=>L+(x/T1)*(W-L-R), Y=y=>H-B-(y/ymax)*(H-T-B);
+  c.strokeStyle="#242c37"; c.fillStyle="#8c97a6"; c.font="11px system-ui"; c.lineWidth=1;
+  const ny=5; for(let i=0;i<=ny;i++){const v=ymax*i/ny, y=Y(v); c.beginPath();c.moveTo(L,y);c.lineTo(W-R,y);c.stroke(); c.fillText(v.toFixed(v<0.1?3:2),4,y+4);}
+  const nx=Math.max(2,Math.floor((W-L-R)/80)); for(let i=0;i<=nx;i++){const v=T1*i/nx,x=X(v); c.beginPath();c.moveTo(x,T);c.lineTo(x,H-B);c.stroke(); c.fillText(v.toFixed(0)+" s",x-10,H-8);}
+  c.save(); c.translate(11,H/2); c.rotate(-Math.PI/2); c.fillText("ATE [m]",-18,0); c.restore();
+  const line=(cu,tmax,col,w,dash)=>{c.beginPath();let s=false;for(let i=0;i<cu.t.length;i++){if(cu.t[i]>tmax)break;const x=X(cu.t[i]),y=Y(cu.a[i]);if(!s){c.moveTo(x,y);s=true}else c.lineTo(x,y);}c.strokeStyle=col;c.lineWidth=w;c.setLineDash(dash||[]);c.stroke();c.setLineDash([]);};
+  line(C.c_open,t,"rgba(140,151,166,.8)",1.4,[5,4]);
+  const palAt=(i,n)=>`hsl(${Math.round(205-175*i/Math.max(1,n-1))},75%,62%)`; // blue (first optimisation) -> orange (last)
+  C.opts.forEach((o,i)=>{ if(o.t>t) return; line(o.cur, Math.min(t, (C.opts[i+1]?C.opts[i+1].t:T1)), palAt(i,C.opts.length), 2.2); });
+  if(!C.opts.length||true) line(C.c_final,t,"#ff6b6b",1.6,[6,4]);
+  // closures
+  C.opts.forEach((o,i)=>{
+    if(o.t>t) return; const x=X(o.t), good=o.ate_after<o.ate_before;
+    c.strokeStyle="rgba(230,233,238,.55)"; c.lineWidth=1.4; c.setLineDash([6,4]); c.beginPath(); c.moveTo(x,T); c.lineTo(x,H-B); c.stroke(); c.setLineDash([]);
+    const y0=Y(o.ate_before), y1=Y(o.ate_after), col=good?"#3fb950":"#f85149", dir=y1>=y0?1:-1;
+    const len=Math.max(14,Math.abs(y1-y0));
+    c.strokeStyle=col; c.fillStyle=col; c.lineWidth=3.5; c.beginPath(); c.moveTo(x,y0); c.lineTo(x,y0+dir*(len-6)); c.stroke();
+    c.beginPath(); c.moveTo(x,y0+dir*len); c.lineTo(x-6,y0+dir*(len-10)); c.lineTo(x+6,y0+dir*(len-10)); c.closePath(); c.fill();
+  });
+  // pair outcome strip along the bottom of the plot
+  const sy=H-B-5; for(const p of pairsOf(C)){ if(p.t>t) break; const x=X(p.t);
+    c.fillStyle = p.ok ? (p.tp===0?"#f85149":"#3fb950") : "rgba(107,118,132,.7)";
+    if(p.ok){ c.beginPath(); c.arc(x,sy-2,3.5,0,7); c.fill(); } else { c.fillRect(x-1,sy-2,2,9); } }
+  // selected pair: big marker + label (colour = TP/FP, filled = accepted, hollow = rejected)
+  const selp=(filteredPairs()[S.pairIdx]||null);
+  if(selp){
+    const col = selp.tp===1?"#3fb950":selp.tp===0?"#f85149":"#9aa5b1", x=X(selp.t);
+    c.strokeStyle=col; c.lineWidth=2; c.setLineDash([2,3]); c.beginPath(); c.moveTo(x,T); c.lineTo(x,H-B); c.stroke(); c.setLineDash([]);
+    const cur=(()=>{const jj=activeOpt(C,selp.t); const cu=jj<0?C.c_open:C.opts[jj].cur; if(!cu.t.length) return 0; const ii=bsearch(cu.t,selp.t); return cu.a[Math.max(0,ii)];})();
+    const yy=Y(cur); c.beginPath(); c.arc(x,yy,7,0,7); selp.ok?(c.fillStyle=col,c.fill()):(c.lineWidth=2.5,c.strokeStyle=col,c.stroke());
+    const txt=`${selp.tp===1?"TP":selp.tp===0?"FP":"?"} · pgls ${selp.pg===null?"–":selp.pg.toFixed(3)} · ${selp.ok?"accepted":"rejected"} · t=${selp.t.toFixed(1)} s`;
+    c.font="12px system-ui"; const w=c.measureText(txt).width+10, bx=Math.min(Math.max(x-w/2,L),W-R-w), by=T+22;
+    c.fillStyle="rgba(15,19,24,.92)"; c.fillRect(bx,by,w,18); c.strokeStyle=col; c.lineWidth=1; c.strokeRect(bx,by,w,18); c.fillStyle=col; c.fillText(txt,bx+5,by+13);
+  }
+  if(S.playing || isFinite(S.t)&&S.t<T1){ c.strokeStyle="#58a6ff"; c.lineWidth=1.5; c.beginPath(); c.moveTo(X(t),T); c.lineTo(X(t),H-B); c.stroke(); }
+  // legend
+  c.fillStyle="#8c97a6"; c.fillText("grey dashed: open-loop · colours: after each optimisation (blue = first … orange = last) · red dashed: final · dots: accepted (green TP / red FP) · ticks: rejected",L+4,T+10);
+}
+
+/* ------------------------------------------------------------------ render + animation */
+function renderAll(){ if(!C) return; fillResTable(); updatePairViewer(); drawTraj(); drawAte();
+  const t=isFinite(S.t)?S.t:D.duration; $("tlabel").textContent=`${fx(t,1)} / ${fx(D.duration,1)} s`; }
+function tick(ts){
+  if(S.playing){
+    const dt=(ts-S.last)/1000; S.last=ts;
+    if(!isFinite(S.t)) S.t=0;
+    S.t += dt*S.speed; if(S.t>=D.duration){S.t=D.duration;S.playing=false;$("bPlay").innerHTML="&#9654; Play";}
+    $("slider").value=Math.round(1000*S.t/D.duration); renderAll();
+  }
+  requestAnimationFrame(tick);
+}
+function setPlaying(on){
+  if(on){ if(!isFinite(S.t)||S.t>=D.duration-0.01) S.t=0; S.playing=true; S.last=performance.now(); $("bPlay").innerHTML="&#10073;&#10073; Pause"; }
+  else { S.playing=false; $("bPlay").innerHTML="&#9654; Play"; }
+}
+async function selectSeq(seq){
+  S.seq=seq; $("status").textContent="loading "+seq+" …";
+  try{ D=await loadSeq(seq);}catch(e){ $("status").textContent=e.message; return; }
+  $("status").textContent="";
+  const keys=CFGS.filter(k=>D.cfgkeys?D.cfgkeys.indexOf(k)>=0:!!D.configs[k]);
+  const opt=k=>`<option value="${k}">${cfgLabel(k)}</option>`;
+  $("selCfg").innerHTML=[["v1","Original methods (v1)"],["v2","v2 experiments"]].map(([g,t])=>{const ks=keys.filter(k=>CM[k]&&CM[k].group===g); return ks.length?`<optgroup label="${t}">${ks.map(opt).join("")}</optgroup>`:"";}).join("");
+  if(keys.indexOf(S.cfg)<0) S.cfg=keys[0]; $("selCfg").value=S.cfg;
+  fillSeqTable(); alignButtons(); await selectCfg(S.cfg);
+}
+function repBox(k){
+  const sr=SUM.data[S.seq]&&SUM.data[S.seq][k], n=sr&&sr.n_rep?sr.n_rep:1, box=$("repBox");
+  box.style.display=n>1?"flex":"none";
+  if(n>1){ $("selRep").innerHTML=Array.from({length:n},(_,i)=>`<option value="${i+1}">repetition ${i+1}${sr.reps&&sr.reps[i]?" · ATE "+fx(sr.reps[i].ate,3)+" m":""}</option>`).join(""); if(S.rep>n) S.rep=1; $("selRep").value=S.rep; }
+  else S.rep=1;
+}
+async function selectCfg(k,keepRep){
+  if(!keepRep) S.rep=1;
+  $("status").textContent="loading "+cfgShort(k)+(S.rep>1?" (rep "+S.rep+")":"")+" …";
+  let c; try{ c=await loadCfg(S.seq,k,S.rep);}catch(e){ $("status").textContent=e.message; return; }
+  $("status").textContent=""; repBox(k); 
+  S.cfg=k; C=c; bounds=null; S.pairIdx=-1; lastPairKey=""; setPlaying(false); S.t=Infinity; $("slider").value=1000;
+  computeBounds(); renderAll();
+}
+
+/* ------------------------------------------------------------------ comparison tab */
+let cmpScope = "ALL";
+const FLT = {group:"all",dof:"all",wh:"all",pts:"all",ss:"all",verify:"all",q:""};
+let SORT = {k:"cfg",dir:1};
+function validSeq(s){ return !(SUM.meta[s]&&SUM.meta[s].warn&&SUM.meta[s].warn.length); }
+function visibleCfgs(){
+  return CFGS.filter(k=>{ const m=CM[k]; if(!m) return false;
+    if(FLT.group!=="all"&&m.group!==FLT.group) return false;
+    if(FLT.dof!=="all"&&String(m.dofv||m.dof)!==FLT.dof) return false;
+    if(m.group==="v2"){
+      if(FLT.wh!=="all"&&m.wh!==FLT.wh) return false;
+      if(FLT.pts!=="all"&&m.pts!==FLT.pts) return false;
+      if(FLT.ss!=="all"&&String(m.ss)!==FLT.ss) return false;
+      if(FLT.verify!=="all"&&m.verify!==FLT.verify) return false;
+    } else if(FLT.wh!=="all"||FLT.pts!=="all"||FLT.ss!=="all"||FLT.verify!=="all") return false;
+    if(FLT.q&&(m.label+" "+k).toLowerCase().indexOf(FLT.q.toLowerCase())<0) return false;
+    return true; });
+}
+function cfgAgg(scope,k){
+  const seqs = scope==="ALL" ? SUM.seqs : [scope], rows=[];
+  for(const s of seqs){ const r=SUM.data[s]&&SUM.data[s][k]; if(r) rows.push({s,r,valid:validSeq(s)}); }
+  if(!rows.length) return null;
+  const sum=(f)=>rows.reduce((a,x)=>a+(f(x.r)||0),0), vrows=rows.filter(x=>x.valid);
+  const mean=(arr)=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
+  const wm=(g)=>{let n=0,s=0;rows.forEach(x=>{const st=g(x.r); if(st.mean!==null&&st.n){n+=st.n;s+=st.mean*st.n}}); return n?s/n:null;};
+  const accTP=sum(r=>r.acc.tp), accFP=sum(r=>r.acc.fp), rejTP=sum(r=>r.rej?r.rej.tp:0), rejFP=sum(r=>r.rej?r.rej.fp:0);
+  return {
+    dATE: mean(vrows.map(x=>x.r.ate-x.r.ate_open)), ate: mean(vrows.map(x=>x.r.ate)),
+    det:sum(r=>r.det.n), detTP:sum(r=>r.det.tp), detFP:sum(r=>r.det.fp),
+    acc:sum(r=>r.acc.n), accTP, accFP, rejTP, rejFP, prec:(accTP+accFP)?accTP/(accTP+accFP):null,
+    recall:(accTP+rejTP)?accTP/(accTP+rejTP):null,
+    ateStd: mean(vrows.map(x=>x.r.ate_std).filter(v=>v!==null&&v!==undefined)),
+    ateBest: mean(vrows.map(x=>(x.r.ate_best!==undefined&&x.r.ate_best!==null)?x.r.ate_best:x.r.ate)),
+    nrep: Math.max(...rows.map(x=>x.r.n_rep||1)),
+    pgDet:wm(r=>r.det), pgAcc:wm(r=>r.acc),
+    impr:sum(r=>r.n_impr), worse:sum(r=>r.n_worse),
+    retr:mean(rows.map(x=>x.r.retr_ms).filter(v=>v!==null&&v!==undefined)),
+    geom:mean(rows.map(x=>x.r.geom_ms).filter(v=>v!==null&&v!==undefined)),
+    geomTot:sum(r=>r.geom_total_s), retrTot:sum(r=>r.retr_total_s), nvalid:vrows.length, n:rows.length
+  };
+}
+function heat(v,lo,hi,goodLow){ // -> background colour
+  if(v===null||v===undefined||!isFinite(v)||hi===lo) return "transparent";
+  let f=(v-lo)/(hi-lo); f=Math.min(1,Math.max(0,f)); if(goodLow) f=1-f;
+  const r=Math.round(248*(1-f)+63*f), g=Math.round(81*(1-f)+185*f), b=Math.round(73*(1-f)+80*f);
+  return `rgba(${r},${g},${b},.28)`;
+}
+function uniq(f){ return [...new Set(CFGS.map(k=>CM[k]).filter(m=>m&&m.group==="v2").map(f))].filter(v=>v!==undefined&&v!=="-"); }
+function buildFilters(){
+  const el=$("cmpFilters"); if(el.dataset.built) return; el.dataset.built="1";
+  const sel=(id,label,opts)=>`<label>${label} <select data-f="${id}"><option value="all">all</option>${opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join("")}</select></label>`;
+  const whs=uniq(m=>m.wh).map(w=>[w,{gem:"GeM",ow:"GeM-OW",owh:"GeM-OWH"}[w]||w]);
+  el.innerHTML=sel("group","set",[["v1","original (v1)"],["v2","v2 experiments"]])+sel("dof","pose graph",[["4","4-DoF"],["6","6-DoF (VINS weights)"],["6m","6-DoF (matched weights)"]])+
+    sel("wh","pooling",whs)+sel("pts","points",uniq(m=>m.pts).map(p=>[p,p]))+sel("ss","sign-split",[["0","off"],["1","on"]])+
+    sel("verify","verification",uniq(m=>m.verify).map(p=>[p,p]))+`<label>search <input id="fq" placeholder="text…" style="background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:4px 8px"></label><button id="fReset">reset filters</button><span class="k" id="fCount"></span>`;
+  el.querySelectorAll("select").forEach(x=>x.onchange=()=>{FLT[x.dataset.f]=x.value; buildCmp();});
+  $("fq").oninput=e=>{FLT.q=e.target.value; buildCmp();};
+  $("fReset").onclick=()=>{Object.keys(FLT).forEach(k=>FLT[k]=k==="q"?"":"all"); el.querySelectorAll("select").forEach(x=>x.value="all"); $("fq").value=""; buildCmp();};
+}
+function buildCmp(){
+  const sel=$("cmpSeq"); if(!sel.options.length){ sel.innerHTML=`<option value="ALL">All sequences (aggregate)</option>`+SUM.seqs.map(s=>`<option value="${s}">${s}</option>`).join(""); sel.value=cmpScope; }
+  buildFilters();
+  let vis=visibleCfgs();
+  $("fCount").textContent=`${vis.length} of ${CFGS.length} configurations`;
+  const A={}; CFGS.forEach(k=>A[k]=cfgAgg(cmpScope,k));
+  vis=vis.filter(k=>A[k]);
+  const cols=[
+    ["ATE change [m]","dATE",3,true],["Final ATE, mean [m]","ate",3,true],["ATE std (repeats)","ateStd",3,true],["ATE best [m]","ateBest",3,true],["Repeats","nrep",0,null],["Detected","det",0,null],["Applied","acc",0,null],
+    ["Applied TP","accTP",0,false],["Applied FP","accFP",0,true],["Missed TP (rejected)","rejTP",0,true],["Precision (applied)","prec",2,false],["Recall (TP applied / all TP)","recall",2,false],
+    ["pgls detected","pgDet",3,false],["pgls applied","pgAcc",3,false],["Closures ↓ATE","impr",0,false],["Closures ↑ATE","worse",0,true],
+    ["Retrieval ms/kf","retr",1,true],["Geometry ms/pair","geom",1,true]];
+  const rng={}; cols.forEach(([n,k])=>{const v=vis.map(c=>A[c]&&A[c][k]).filter(x=>x!==null&&x!==undefined&&isFinite(x)); rng[k]=v.length?[Math.min(...v),Math.max(...v)]:[0,0];});
+  const val=(k,f)=>f==="cfg"?cfgLabel(k):(A[k][f]===null||A[k][f]===undefined||!isFinite(A[k][f])?Infinity:A[k][f]);
+  if(SORT.k!=="cfg"||SORT.dir<0) vis=vis.slice().sort((x,y)=>{const a=val(x,SORT.k),b=val(y,SORT.k); return (a<b?-1:a>b?1:0)*SORT.dir;});
+  let h="<tr><th data-s=\"cfg\" style=\"cursor:pointer\">Configuration"+(SORT.k==="cfg"?(SORT.dir>0?" ▲":" ▼"):"")+"</th><th>DoF</th>"+cols.map(c=>`<th data-s="${c[1]}" style="cursor:pointer" title="click to sort">${c[0]}${SORT.k===c[1]?(SORT.dir>0?" ▲":" ▼"):""}</th>`).join("")+"</tr>";
+  vis.forEach(k=>{ const a=A[k], m=CM[k];
+    h+=`<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${MCOL[mOf(k)]||"#888"};margin-right:6px;${isLight(k)?"opacity:.55":""}"></span>${cfgLabel(k)}</td><td>${m.dofv||m.dof}</td>`+
+       cols.map(([n,f,d,low])=>`<td style="background:${low===null?"transparent":heat(a[f],rng[f][0],rng[f][1],low)}">${fx(a[f],d)}</td>`).join("")+"</tr>"; });
+  if(!vis.length) h+=`<tr><td colspan="${cols.length+2}" class="k">no configuration matches the filters (or no data for this scope)</td></tr>`;
+  $("cmpTable").innerHTML=h;
+  $("cmpTable").querySelectorAll("th[data-s]").forEach(t=>t.onclick=()=>{ SORT=(SORT.k===t.dataset.s)?{k:SORT.k,dir:-SORT.dir}:{k:t.dataset.s,dir:1}; buildCmp(); });
+  const order=vis.slice().sort((x,y)=>{const a=A[x].dATE,b=A[y].dATE; return (a===null?9:a)-(b===null?9:b);});
+  drawBars(A,order); drawTpFp(A,order);
+  $("cardMatrix").style.display = cmpScope==="ALL"?"block":"none";
+  $("cardOverlay").style.display = cmpScope==="ALL"?"none":"block";
+  if(cmpScope==="ALL") buildMatrix(vis); else buildOverlay(vis);
+}
+function hSize(id,n,per){ const h=Math.max(300,n*per+50); $(id).parentElement.style.height=h+"px"; }
+function drawBars(A,order){
+  hSize("cvBar",order.length,17);
+  const [c,W,H]=setupCanvas($("cvBar")); c.clearRect(0,0,W,H);
+  const vals=order.map(k=>A[k].dATE).filter(v=>v!==null&&v!==undefined);
+  if(!vals.length) return; let lo=Math.min(0,...vals), hi=Math.max(0,...vals); const pad=(hi-lo)*0.15||0.1; lo-=pad; hi+=pad;
+  const L=Math.min(250,W*0.45),T=16,R=40,B=18, X=v=>L+(v-lo)/(hi-lo)*(W-L-R), rh=(H-T-B)/order.length;
+  c.font="11px system-ui"; c.strokeStyle="#242c37"; c.fillStyle="#8c97a6";
+  for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4; c.beginPath();c.moveTo(X(v),T);c.lineTo(X(v),H-B);c.stroke();c.fillText(v.toFixed(2),X(v)-10,10);}
+  c.strokeStyle="#8c97a6"; c.beginPath(); c.moveTo(X(0),T); c.lineTo(X(0),H-B); c.stroke();
+  order.forEach((k,i)=>{ const a=A[k]; if(a.dATE===null) return; const y=T+i*rh, x0=X(0), x1=X(a.dATE);
+    c.fillStyle=MCOL[mOf(k)]||"#888"; c.globalAlpha=isLight(k)?0.5:1; c.fillRect(Math.min(x0,x1),y+rh*0.15,Math.abs(x1-x0),rh*0.7); c.globalAlpha=1;
+    c.fillStyle="#e6e9ee"; c.textAlign=a.dATE<0?"right":"left"; c.fillText(a.dATE.toFixed(3),a.dATE<0?x1-3:x1+3,y+rh*0.75);
+    c.fillStyle="#8c97a6"; c.textAlign="right"; c.fillText(cfgShort(k),L-6,y+rh*0.75); c.textAlign="left"; });
+  c.fillStyle="#8c97a6"; c.fillText("light bars: 100%-recall thresholds or 6-DoF · sorted by ATE change (best on top)",L,H-4);
+}
+function drawTpFp(A,order){
+  hSize("cvTpfp",order.length,17);
+  const [c,W,H]=setupCanvas($("cvTpfp")); c.clearRect(0,0,W,H);
+  const mx=Math.max(1,...order.map(k=>A[k].accTP+A[k].accFP+A[k].rejTP)), L=Math.min(250,W*0.45),T=36,R=20,B=6, rh=(H-T-B)/Math.max(1,order.length), X=v=>L+v/mx*(W-L-R);
+  c.font="11px system-ui"; c.strokeStyle="#242c37"; c.fillStyle="#8c97a6";
+  for(let i=0;i<=4;i++){const v=mx*i/4;c.beginPath();c.moveTo(X(v),T);c.lineTo(X(v),H-B);c.stroke();c.fillText(Math.round(v),X(v)-6,T-4);}
+  order.forEach((k,i)=>{ const a=A[k], y=T+i*rh, h=rh*0.7, y0=y+rh*0.15;
+    c.fillStyle="#3fb950"; c.fillRect(X(0),y0,X(a.accTP)-X(0),h);
+    c.fillStyle="#f85149"; c.fillRect(X(a.accTP),y0,X(a.accTP+a.accFP)-X(a.accTP),h);
+    c.fillStyle="rgba(240,180,41,.55)"; c.fillRect(X(a.accTP+a.accFP),y0,X(a.accTP+a.accFP+a.rejTP)-X(a.accTP+a.accFP),h);
+    c.fillStyle="#8c97a6"; c.textAlign="right"; c.fillText(cfgShort(k),L-6,y+rh*0.75); c.textAlign="left"; });
+  c.textAlign="right"; c.fillStyle="#f85149"; c.fillText("■ applied FP",W-R,12); c.fillStyle="#3fb950"; c.fillText("■ applied TP",W-R-90,12); c.fillStyle="#f0b429"; c.fillText("■ true loops missed (rejected)",W-R-180,12); c.textAlign="left";
+}
+function buildMatrix(vis){
+  const all=[]; SUM.seqs.forEach(s=>vis.forEach(k=>{const r=SUM.data[s]&&SUM.data[s][k]; if(r&&validSeq(s)) all.push(r.ate-r.ate_open);}));
+  const m=Math.max(0.01,...all.map(Math.abs));
+  let h="<tr><th>Sequence</th>"+vis.map(k=>`<th style="white-space:normal;text-align:center;min-width:70px;font-size:11px">${cfgShort(k)}</th>`).join("")+"</tr>";
+  SUM.seqs.forEach(s=>{ const ok=validSeq(s); h+=`<tr><td>${s}${ok?"":" ⚠"}</td>`+vis.map(k=>{
+      const r=SUM.data[s]&&SUM.data[s][k]; if(!r) return "<td><div class='k'>–</div></td>";
+      const d=r.ate-r.ate_open, f=Math.min(1,Math.abs(d)/m), col=d<0?`rgba(63,185,80,${.15+.55*f})`:`rgba(248,81,73,${.15+.55*f})`;
+      return `<td><div data-s="${s}" data-k="${k}" style="background:${ok?col:"#2a323d"};cursor:pointer;${ok?"":"color:#8c97a6"}" title="applied ${r.acc.n} (TP ${r.acc.tp}/FP ${r.acc.fp})">${d>0?"+":""}${d.toFixed(3)}</div></td>`; }).join("")+"</tr>"; });
+  $("matrix").innerHTML=h;
+  $("matrix").querySelectorAll("div[data-s]").forEach(el=>el.onclick=()=>{ S.cfg=el.dataset.k; openExplorer(el.dataset.s); });
+}
+async function buildOverlay(vis){
+  const seq=cmpScope, shown=vis.slice(0,12); $("overlayTitle").textContent=`Running ATE of ${shown.length} configurations${vis.length>shown.length?` (first 12 of ${vis.length} – narrow the filters)`:""} (solid = 4-DoF / default thr., dashed = 6-DoF / 100%-recall thr.)`;
+  let d; try{ d=await loadSeq(seq); await Promise.all(shown.map(k=>d.cfgkeys&&d.cfgkeys.indexOf(k)<0?null:loadCfg(seq,k))); }catch(e){return;}
+  if(cmpScope!==seq) return;
+  const [c,W,H]=setupCanvas($("cvOverlay")); c.clearRect(0,0,W,H);
+  const L=46,B=26,T=8,R=10; let ymax=0.01;
+  shown.forEach(k=>{const cf=d.configs[k]; if(cf) cf.c_final.a.forEach(a=>ymax=Math.max(ymax,a));}); ymax*=1.08;
+  const X=x=>L+x/d.duration*(W-L-R), Y=y=>H-B-y/ymax*(H-T-B);
+  c.font="11px system-ui"; c.fillStyle="#8c97a6"; c.strokeStyle="#242c37";
+  for(let i=0;i<=5;i++){const v=ymax*i/5;c.beginPath();c.moveTo(L,Y(v));c.lineTo(W-R,Y(v));c.stroke();c.fillText(v.toFixed(v<.1?3:2),4,Y(v)+4);}
+  for(let i=0;i<=6;i++){const v=d.duration*i/6;c.fillText(v.toFixed(0)+" s",X(v)-10,H-8);}
+  const hue=(i)=>`hsl(${Math.round(360*i/Math.max(1,shown.length))},70%,62%)`;
+  shown.forEach((k,i)=>{const cf=d.configs[k]; if(!cf) return; c.beginPath();
+    cf.c_final.t.forEach((t,j)=>{const x=X(t),y=Y(cf.c_final.a[j]); j?c.lineTo(x,y):c.moveTo(x,y);});
+    c.strokeStyle=hue(i); c.lineWidth=2; c.setLineDash(isLight(k)?[6,4]:[]); c.stroke(); c.setLineDash([]); });
+  const d0=d.configs[shown[0]];
+  if(d0){ c.beginPath(); d0.c_open.t.forEach((t,i)=>{const x=X(t),y=Y(d0.c_open.a[i]); i?c.lineTo(x,y):c.moveTo(x,y);}); c.strokeStyle="rgba(140,151,166,.7)"; c.lineWidth=1.2; c.setLineDash([2,3]); c.stroke(); c.setLineDash([]); }
+  $("overlayLeg").innerHTML=shown.map((k,i)=>`<span><i style="border-color:${hue(i)}"></i>${cfgShort(k)}</span>`).join("")+`<span><i style="border-color:#8c97a6;border-top-style:dotted"></i>open-loop (first shown run)</span>`;
+}
+
+/* ------------------------------------------------------------------ wiring */
+function openExplorer(seq){
+  $("cmp").style.display="none"; $("app").style.display="grid"; $("tab-ex").classList.add("on"); $("tab-cmp").classList.remove("on");
+  $("selSeq").value=seq||S.seq; selectSeq($("selSeq").value);
+}
+$("tab-ex").onclick=()=>openExplorer(S.seq);
+$("tab-cmp").onclick=()=>{ $("app").style.display="none"; $("cmp").style.display="block"; $("tab-cmp").classList.add("on"); $("tab-ex").classList.remove("on"); buildCmp(); };
+$("cmpSeq").onchange=e=>{cmpScope=e.target.value; buildCmp();};
+$("selSeq").onchange=e=>selectSeq(e.target.value);
+$("selCfg").onchange=e=>selectCfg(e.target.value);
+$("selRep").onchange=e=>{S.rep=+e.target.value; selectCfg(S.cfg,true);};
+$("bPlay").onclick=()=>{ setPlaying(!S.playing); };
+$("bEnd").onclick=()=>{ setPlaying(false); S.t=Infinity; $("slider").value=1000; renderAll(); };
+$("slider").oninput=e=>{ setPlaying(false); S.t=D.duration*e.target.value/1000; if(e.target.value>=1000) S.t=Infinity; renderAll(); };
+$("speed").onchange=e=>S.speed=+e.target.value; S.speed=+$("speed").value;
+$("plane").onchange=e=>{S.plane=e.target.value;bounds=null;computeBounds();renderAll();};
+S.plane=$("plane").value;
+["cGhost","cRej"].forEach(id=>$(id).onchange=renderAll);
+["cOpen","cRot"].forEach(id=>$(id).onchange=()=>{bounds=null;computeBounds();renderAll();});
+$("cStretch").onchange=()=>{S.view={z:1,px:0,py:0};renderAll();};
+$("bReset").onclick=()=>{bounds=null;computeBounds();renderAll();};
+(function(){ const cv=$("cvTraj"); let drag=null;
+  cv.addEventListener("wheel",e=>{e.preventDefault(); if(!S.view) return; const r=cv.getBoundingClientRect(), mx=e.clientX-r.left-r.width/2, my=e.clientY-r.top-r.height/2;
+    const f=Math.exp(-e.deltaY*0.0015), z0=S.view.z, z1=Math.min(60,Math.max(0.5,z0*f)), k=z1/z0;
+    S.view.px=mx-(mx-S.view.px)*k; S.view.py=my-(my-S.view.py)*k; S.view.z=z1; renderAll();},{passive:false});
+  cv.addEventListener("mousedown",e=>{drag=[e.clientX,e.clientY,S.view.px,S.view.py]; cv.style.cursor="grabbing";});
+  window.addEventListener("mouseup",()=>{drag=null; cv.style.cursor="grab";});
+  window.addEventListener("mousemove",e=>{ if(!drag) return; S.view.px=drag[2]+e.clientX-drag[0]; S.view.py=drag[3]+e.clientY-drag[1]; renderAll();});
+  cv.addEventListener("dblclick",()=>{S.view={z:1,px:0,py:0};renderAll();}); cv.style.cursor="grab"; })();
+$("pFilter").onchange=()=>{S.pairIdx=-1;lastPairKey="";renderAll();};
+$("pFollow").onchange=()=>{lastPairKey="";renderAll();};
+$("pPrev").onclick=()=>stepPair(-1); $("pNext").onclick=()=>stepPair(1);
+$("cvAte").addEventListener("click",ev=>{ if(!D) return; const r=ev.target.getBoundingClientRect(); const L=46,R=10;
+  const f=Math.min(1,Math.max(0,(ev.clientX-r.left-L)/(r.width-L-R))); setPlaying(false); S.t=f*D.duration; $("slider").value=Math.round(1000*f); renderAll(); });
+window.addEventListener("resize",()=>{ if($("app").style.display!=="none") renderAll(); else buildCmp(); });
+
+(function init(){
+  if(!SUM.seqs.length){ $("status").textContent="no data – run build_dashboard.py first"; return; }
+  $("selSeq").innerHTML=SUM.seqs.map(s=>`<option value="${s}">${s}${validSeq(s)?"":" ⚠"}</option>`).join("");
+  applyAlignSummary(); alignButtons(); S.seq=SUM.seqs[0]; selectSeq(S.seq); requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

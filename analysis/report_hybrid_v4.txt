@@ -1,0 +1,58 @@
+
+spot_indoor_stairs   (TP: pgls >= 0.5; counts are means over the repetitions)
+variant                      reps  proposed  verified  acc_tp  acc_fp  rej_tp  rej_fp  ate_mean  ate_std  ate_best  ate_change  n_opt  improved  worsened  retr_ms
+hyb-ow-vins-ss1-lg-d6        1     383       100       100     0       256     27      0.144     -        0.144     -0.407      22     12        10        54.1   
+hyb-owh-gridT-ss0-lg-d6      1     394       96        96      0       271     27      0.145     -        0.145     -0.406      18     10        8         39.0   
+hyb-owh-vins-ss0-lg-d6       1     383       98        98      0       258     27      0.141     -        0.141     -0.410      20     11        9         22.6   
+hyb-owh-xfeat-ss0-mutual-d6  1     380       92        92      0       261     27      0.142     -        0.142     -0.409      17     10        7         21.1   
+
+spot_outdoor_day_skatepark_1   (TP: pgls >= 0.5; counts are means over the repetitions)
+variant                      reps  proposed  verified  acc_tp  acc_fp  rej_tp  rej_fp  ate_mean  ate_std  ate_best  ate_change  n_opt  improved  worsened  retr_ms
+hyb-ow-vins-ss1-lg-d6        1     320       26        26      0       140     154     0.717     -        0.717     0.056       11     4         7         64.3   
+hyb-owh-gridT-ss0-lg-d6      1     334       28        28      0       149     157     0.715     -        0.715     0.055       11     3         8         48.8   
+hyb-owh-vins-ss0-lg-d6       1     335       25        24      1       151     159     0.717     -        0.717     0.056       9      2         7         30.2   
+hyb-owh-xfeat-ss0-mutual-d6  1     305       24        24      0       131     150     0.716     -        0.716     0.055       9      2         7         25.8   
+
+spot_indoor_building_loop   (TP: pgls >= 0.5; counts are means over the repetitions)
+variant                      reps  proposed  verified  acc_tp  acc_fp  rej_tp  rej_fp  ate_mean  ate_std  ate_best  ate_change  n_opt  improved  worsened  retr_ms
+hyb-ow-vins-ss1-lg-d6        1     173       0         0       0       2       171     1.511     -        1.511     -0.001      0      0         0         68.1   
+hyb-owh-gridT-ss0-lg-d6      1     171       0         0       0       0       171     1.511     -        1.511     -0.001      0      0         0         43.8   
+hyb-owh-vins-ss0-lg-d6       1     180       0         0       0       5       175     1.511     -        1.511     -0.001      0      0         0         26.2   
+hyb-owh-xfeat-ss0-mutual-d6  1     160       0         0       0       0       160     1.511     -        1.511     -0.001      0      0         0         28.3   
+
+spot_forest_hard   (TP: pgls >= 0.5; counts are means over the repetitions)
+variant                      reps  proposed  verified  acc_tp  acc_fp  rej_tp  rej_fp  ate_mean  ate_std  ate_best  ate_change  n_opt  improved  worsened  retr_ms
+hyb-ow-vins-ss1-lg-d6        1     721       5         5       0       64      652     1.480     -        1.480     -0.070      2      2         0         60.4   
+hyb-owh-gridT-ss0-lg-d6      1     715       1         1       0       63      651     1.518     -        1.518     -0.032      1      1         0         50.9   
+hyb-owh-vins-ss0-lg-d6       1     722       4         4       0       68      650     1.483     -        1.483     -0.067      2      2         0         28.5   
+hyb-owh-xfeat-ss0-mutual-d6  1     682       1         1       0       54      627     1.518     -        1.518     -0.032      1      1         0         28.9   
+
+spot_forest_road_1   (TP: pgls >= 0.5; counts are means over the repetitions)
+variant                      reps  proposed  verified  acc_tp  acc_fp  rej_tp  rej_fp  ate_mean  ate_std  ate_best  ate_change  n_opt  improved  worsened  retr_ms
+hyb-ow-vins-ss1-lg-d6        1     410       0         0       0       1       409     1.518     -        1.518     -0.008      0      0         0         60.4   
+hyb-owh-gridT-ss0-lg-d6      1     410       0         0       0       2       408     1.518     -        1.518     -0.008      0      0         0         48.3   
+hyb-owh-vins-ss0-lg-d6       1     410       0         0       0       1       409     1.518     -        1.518     -0.008      0      0         0         26.4   
+hyb-owh-xfeat-ss0-mutual-d6  1     404       0         0       0       1       403     1.518     -        1.518     -0.008      0      0         0         30.5   
+
+spot_outdoor_day_art_plaza_loop   (TP: pgls >= 0.5; counts are means over the repetitions)
+variant                      reps  proposed  verified  acc_tp  acc_fp  rej_tp  rej_fp  ate_mean  ate_std  ate_best  ate_change  n_opt  improved  worsened  retr_ms
+hyb-ow-vins-ss1-lg-d6        1     485       0         0       0       5       480     1.010     -        1.010     0.006       0      0         0         60.1   
+hyb-owh-gridT-ss0-lg-d6      1     474       0         0       0       4       470     1.010     -        1.010     0.006       0      0         0         36.3   
+hyb-owh-vins-ss0-lg-d6       1     487       0         0       0       5       482     1.010     -        1.010     0.006       0      0         0         20.3   
+hyb-owh-xfeat-ss0-mutual-d6  1     453       1         1       0       1       451     1.005     -        1.005     0.001       1      1         0         26.5   
+
+spot_outdoor_day_penno_short_loop   (TP: pgls >= 0.5; counts are means over the repetitions)
+variant                      reps  proposed  verified  acc_tp  acc_fp  rej_tp  rej_fp  ate_mean  ate_std  ate_best  ate_change  n_opt  improved  worsened  retr_ms
+hyb-ow-vins-ss1-lg-d6        1     497       0         0       0       16      481     1.268     -        1.268     0.005       0      0         0         54.6   
+hyb-owh-gridT-ss0-lg-d6      1     490       0         0       0       20      470     1.268     -        1.268     0.005       0      0         0         38.2   
+hyb-owh-vins-ss0-lg-d6       1     500       0         0       0       21      479     1.268     -        1.268     0.005       0      0         0         21.1   
+hyb-owh-xfeat-ss0-mutual-d6  1     478       0         0       0       14      464     1.268     -        1.268     0.005       0      0         0         22.4   
+
+MEAN over sequences (ATE: mean of the per-sequence mean; std = mean per-sequence repeat std; best = mean of per-sequence best; loop counts summed)
+variant                      seqs  reps  acc_tp  acc_fp  rej_tp  ate_mean  ate_std  ate_best  ate_change  improved  worsened  retr_ms
+hyb-ow-vins-ss1-lg-d6        7     1     131     0       484     1.093     -        1.093     -0.060      18        17        60.3   
+hyb-owh-gridT-ss0-lg-d6      7     1     125     0       509     1.098     -        1.098     -0.054      14        16        43.6   
+hyb-owh-vins-ss0-lg-d6       7     1     126     1       509     1.093     -        1.093     -0.060      15        16        25.0   
+hyb-owh-xfeat-ss0-mutual-d6  7     1     118     0       462     1.097     -        1.097     -0.056      14        14        26.2   
+
+wrote /mnt/d/vins/v3/hyb/report.csv

@@ -1,0 +1,4 @@
+455 run slots checked over 7 sequences
+
+1 PROBLEM(S):
+  ow-gridT-ss0-mutual-d6 / spot_outdoor_day_penno_short_loop     pairs_proposed differs d4 vs d6: 25 vs 24

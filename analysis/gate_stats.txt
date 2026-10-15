@@ -1,0 +1,52 @@
+
+per sequence (all -d6 runs together)
+                            proposed  verified     brief       pnp     lgpnp      gate
+spot_forest_hard                1691        82        28      1321       248        12
+spot_forest_road_1               709         0         0       632        77         0
+spot_indoor_building_loop        519         1        11       370       128         9
+spot_indoor_stairs              1301       388       224       520        61       108
+spot_outdoor_day_art_plaza      1401       111        28      1052       152        58
+spot_outdoor_day_penno_sho       985        26         9       807       135         8
+spot_outdoor_day_skatepark      1107       280        31       605        80       111
+TOTAL                           7713       888       331      5307       881       306
+
+per configuration (all sequences together)
+                            proposed  verified     brief       pnp     lgpnp      gate
+base-dbow2-d6                   2838       149       101      2533         0        55
+base-netvlad-d6                   23         4         6         8         0         5
+base-xfeat_1d-d6                  36        11         4        15         0         6
+base-xfeat_2d-d6                  84        10         4        64         0         6
+base-xfeat_gem-d6                 42         5         7        21         0         9
+gem-gridA-ss0-mutual-d6          350        31        19       288         0        12
+gem-gridT-ss0-lg-d6              327        27        19       271         0        10
+gem-gridT-ss0-mutual-d6          368        29        19       312         0         8
+gem-gridX-ss0-mutual-d6           49         6         9        24         0        10
+gem-vins-ss0-lg-d6               320        60         0        23       231         6
+gem-vins-ss0-mutual-d6           342        30         8       289         0        15
+gem-vins-ss1-lg-d6               322        69         0        16       225        12
+gem-xfeat-ss0-lg-d6                3         1         0         2         0         0
+gem-xfeat-ss0-mutual-d6           42         5         7        21         0         9
+gem-xfeat-ss1-mutual-d6           41         5         6        20         0        10
+ow-gridA-ss0-mutual-d6           219        22        17       168         0        12
+ow-gridT-ss0-lg-d6               196        24        16       147         0         9
+ow-gridT-ss0-mutual-d6           213        24        11       168         0        10
+ow-gridX-ss0-mutual-d6            36        10         6        17         0         3
+ow-vins-ss0-lg-d6                209        47         0        19       134         9
+ow-vins-ss0-mutual-d6            221        25         2       183         0        11
+ow-vins-ss1-lg-d6                162        49         0        11        94         8
+ow-xfeat-ss0-lg-d6                 2         1         0         1         0         0
+ow-xfeat-ss0-mutual-d6            31         6         6        14         0         5
+ow-xfeat-ss1-mutual-d6            23         5         4        10         0         4
+owh-gridA-ss0-mutual-d6          211        22        16       165         0         8
+owh-gridT-ss0-lg-d6              164        29        12       117         0         6
+owh-gridT-ss0-mutual-d6          189        27        11       143         0         8
+owh-gridX-ss0-mutual-d6           36         9         6        17         0         4
+owh-vins-ss0-lg-d6               190        56         0        17       113         4
+owh-vins-ss0-mutual-d6           219        28         4       176         0        11
+owh-vins-ss1-lg-d6               154        53         0         7        84        10
+owh-xfeat-ss0-lg-d6                1         1         0         0         0         0
+owh-xfeat-ss0-mutual-d6           29         4         6        12         0         7
+owh-xfeat-ss1-mutual-d6           21         4         5         8         0         4
+TOTAL                           7713       888       331      5307       881       306
+
+245 run-rows read

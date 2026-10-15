@@ -1,0 +1,31 @@
+389 candidates with a PnP pose; 349 true, 40 false
+
+A. grid depth / LiDAR depth over 379 pairs: median 0.61  p10 0.39  p90 3.15   (<1 = underestimate = safe side)
+
+B. what each run accepted (candidates that reached PnP)
+run                                              TP     FP
+g1-base-dbow2-d6                                116      0
+g1-base-netvlad-d6                                3      0
+g1-base-xfeat_2d-d6                               5      0
+g1-base-xfeat_gem-d6                              2      0
+g1-owh-gridT-ss0-lg-d6                           18      0
+g1-owh-vins-ss0-lg-d6                            17      1
+g1-owh-vins-ss0-mutual-d6                        15      1
+g1-owh-xfeat-ss0-lg-d6                            0      0
+g1-owh-xfeat-ss0-mutual-d6                        3      0
+
+C. replay of all logged candidates (g0- and g1- runs): P recomputed with depth_scale s (LG pairs also need >= 18 inliers)
+scale    pmin         TP       FP
+0.60     0.50        219       14
+0.60     0.70        198        9
+0.60     0.80        180        8
+0.60     0.90        144        4
+0.80     0.50        225       22
+0.80     0.70        208       13
+0.80     0.80        192       10
+0.80     0.90        159        6
+1.00     0.50        227       24
+1.00     0.70        213       16
+1.00     0.80        201       10
+1.00     0.90        173        6
+wrote /mnt/d/vins/v2/dashboard/v3/analysis/gate_v3.csv

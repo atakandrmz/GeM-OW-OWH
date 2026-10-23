@@ -15,13 +15,13 @@ w-dbow2-n1-P     spot_forest_hard                 3   0.608+-0.000   +0.085    6
 w-dbow2-n1-P     spot_forest_road_1               3   1.676+-0.000   -0.026    0.0   0.0   0.0    nan    nan    nan%
 w-dbow2-n1-P     spot_outdoor_day_art_plaza_loo   3   1.013+-0.000   -0.006    0.0   0.0   0.0    nan    nan    nan%
 w-dbow2-n1-P     spot_outdoor_day_penno_short_l   3   1.347+-0.000   -0.009    3.0   3.0   0.0   0.65    nan    100%
-w-dbow2-n1-oracle spot_indoor_stairs               1   0.122+-0.000   -0.236  111.0 111.0   0.0   0.99    nan    100%
-w-dbow2-n1-oracle spot_outdoor_day_skatepark_1     1   0.487+-0.000   -0.100   41.0  38.0   3.0   0.82   0.22     98%
-w-dbow2-n1-oracle spot_indoor_building_loop        1   1.461+-0.000   +0.001    0.0   0.0   0.0    nan    nan    nan%
-w-dbow2-n1-oracle spot_forest_hard                 1   0.616+-0.000   +0.092    6.0   6.0   0.0   0.94    nan    100%
-w-dbow2-n1-oracle spot_forest_road_1               1   1.676+-0.000   -0.026    0.0   0.0   0.0    nan    nan    nan%
-w-dbow2-n1-oracle spot_outdoor_day_art_plaza_loo   1   1.013+-0.000   -0.006    0.0   0.0   0.0    nan    nan    nan%
-w-dbow2-n1-oracle spot_outdoor_day_penno_short_l   1   1.347+-0.000   -0.009    3.0   3.0   0.0   0.73    nan    100%
+w-dbow2-n1-oracle spot_indoor_stairs               3   0.122+-0.000   -0.236  111.0 111.0   0.0   0.99    nan    100%
+w-dbow2-n1-oracle spot_outdoor_day_skatepark_1     3   0.487+-0.000   -0.100   41.0  38.0   3.0   0.82   0.22     98%
+w-dbow2-n1-oracle spot_indoor_building_loop        3   1.461+-0.000   +0.001    0.0   0.0   0.0    nan    nan    nan%
+w-dbow2-n1-oracle spot_forest_hard                 3   0.616+-0.000   +0.092    6.0   6.0   0.0   0.94    nan    100%
+w-dbow2-n1-oracle spot_forest_road_1               3   1.676+-0.000   -0.026    0.0   0.0   0.0    nan    nan    nan%
+w-dbow2-n1-oracle spot_outdoor_day_art_plaza_loo   3   1.013+-0.000   -0.006    0.0   0.0   0.0    nan    nan    nan%
+w-dbow2-n1-oracle spot_outdoor_day_penno_short_l   3   1.347+-0.000   -0.009    3.0   3.0   0.0   0.73    nan    100%
 w-dbow2-n1-uni   spot_indoor_stairs               3   0.162+-0.070   -0.331  109.3 109.3   0.0   1.00    nan    100%
 w-dbow2-n1-uni   spot_outdoor_day_skatepark_1     3   0.410+-0.000   -0.177   41.0  38.0   3.0   1.00   1.00     93%
 w-dbow2-n1-uni   spot_indoor_building_loop        3   1.461+-0.000   +0.001    0.0   0.0   0.0    nan    nan    nan%
@@ -36,13 +36,13 @@ w-dbow2-n4-P     spot_forest_hard                 3   0.606+-0.000   +0.082  547
 w-dbow2-n4-P     spot_forest_road_1               3   1.688+-0.000   -0.014  279.0 278.0   1.0   0.88   0.98    100%
 w-dbow2-n4-P     spot_outdoor_day_art_plaza_loo   3   0.994+-0.000   -0.025  238.0 238.0   0.0   0.94    nan    100%
 w-dbow2-n4-P     spot_outdoor_day_penno_short_l   3   1.352+-0.000   -0.004  385.0 383.0   2.0   0.93   0.99     99%
-w-dbow2-n4-oracle spot_indoor_stairs               1   0.109+-0.000   -0.249  551.0 551.0   0.0   0.99    nan    100%
-w-dbow2-n4-oracle spot_outdoor_day_skatepark_1     1   0.448+-0.000   -0.140  345.0 336.0   9.0   0.93   0.32     99%
-w-dbow2-n4-oracle spot_indoor_building_loop        1   1.461+-0.000   +0.001  121.0 121.0   0.0   1.00    nan    100%
-w-dbow2-n4-oracle spot_forest_hard                 1   0.617+-0.000   +0.094  547.0 547.0   0.0   0.99    nan    100%
-w-dbow2-n4-oracle spot_forest_road_1               1   1.690+-0.000   -0.012  279.0 278.0   1.0   0.99   0.33    100%
-w-dbow2-n4-oracle spot_outdoor_day_art_plaza_loo   1   0.989+-0.000   -0.029  238.0 238.0   0.0   1.00    nan    100%
-w-dbow2-n4-oracle spot_outdoor_day_penno_short_l   1   1.343+-0.000   -0.013  385.0 383.0   2.0   0.99   0.22    100%
+w-dbow2-n4-oracle spot_indoor_stairs               3   0.109+-0.000   -0.249  551.0 551.0   0.0   0.99    nan    100%
+w-dbow2-n4-oracle spot_outdoor_day_skatepark_1     3   0.448+-0.000   -0.140  345.0 336.0   9.0   0.93   0.32     99%
+w-dbow2-n4-oracle spot_indoor_building_loop        3   1.461+-0.000   +0.001  121.0 121.0   0.0   1.00    nan    100%
+w-dbow2-n4-oracle spot_forest_hard                 3   0.617+-0.000   +0.094  547.0 547.0   0.0   0.99    nan    100%
+w-dbow2-n4-oracle spot_forest_road_1               3   1.690+-0.000   -0.012  279.0 278.0   1.0   0.99   0.33    100%
+w-dbow2-n4-oracle spot_outdoor_day_art_plaza_loo   3   0.989+-0.000   -0.029  238.0 238.0   0.0   1.00    nan    100%
+w-dbow2-n4-oracle spot_outdoor_day_penno_short_l   3   1.343+-0.000   -0.013  385.0 383.0   2.0   0.99   0.22    100%
 w-dbow2-n4-uni   spot_indoor_stairs               3   0.109+-0.000   -0.249  551.0 551.0   0.0   1.00    nan    100%
 w-dbow2-n4-uni   spot_outdoor_day_skatepark_1     3   0.400+-0.000   -0.188  345.0 336.0   9.0   1.00   1.00     97%
 w-dbow2-n4-uni   spot_indoor_building_loop        3   1.461+-0.000   +0.001  121.0 121.0   0.0   1.00    nan    100%
@@ -53,11 +53,11 @@ w-dbow2-n4-uni   spot_outdoor_day_penno_short_l   3   1.342+-0.000   -0.014  385
 
 == against the uniform run with the same n: mean ATE difference +- standard error (negative = PGLS weights better); differences < 0.02 m are noise
 w-dbow2-n1-P   vs w-dbow2-n1-uni mean -0.0013 m over 7 sequences (better on 2) | indoor_stairs -0.036+-0.041; outdoor_day_skatep +0.033+-0.000; indoor_building_lo +0.000+-0.000; forest_hard -0.007+-0.000; forest_road_1 +0.000+-0.000; outdoor_day_art_pl +0.000+-0.000; outdoor_day_penno_ +0.000+-0.000
-w-dbow2-n1-oracle vs w-dbow2-n1-uni mean +0.0053 m over 7 sequences (better on 1) | indoor_stairs -0.040+-0.041; outdoor_day_skatep +0.077+-0.000; indoor_building_lo +0.000+-0.000; forest_hard +0.000+-0.000; forest_road_1 -0.000+-0.000; outdoor_day_art_pl +0.000+-0.000; outdoor_day_penno_ +0.000+-0.000
-w-dbow2-n4-P   vs w-dbow2-n4-uni mean +0.0012 m over 7 sequences (better on 1) | indoor_stairs +0.001+-0.000; outdoor_day_skatep +0.007+-0.000; indoor_building_lo -0.001+-0.000; forest_hard -0.011+-0.000; forest_road_1 -0.002+-0.000; outdoor_day_art_pl +0.005+-0.000; outdoor_day_penno_ +0.010+-0.000
+w-dbow2-n1-oracle vs w-dbow2-n1-uni mean +0.0053 m over 7 sequences (better on 1) | indoor_stairs -0.040+-0.041; outdoor_day_skatep +0.077+-0.000; indoor_building_lo +0.000+-0.000; forest_hard +0.000+-0.000; forest_road_1 +0.000+-0.000; outdoor_day_art_pl +0.000+-0.000; outdoor_day_penno_ +0.000+-0.000
 w-dbow2-n4-P   vs w-dbow2-n1-uni mean -0.0098 m over 7 sequences (better on 3) | indoor_stairs -0.053+-0.041; outdoor_day_skatep -0.004+-0.000; indoor_building_lo -0.001+-0.000; forest_hard -0.010+-0.000; forest_road_1 +0.012+-0.000; outdoor_day_art_pl -0.019+-0.000; outdoor_day_penno_ +0.005+-0.000
-w-dbow2-n4-oracle vs w-dbow2-n4-uni mean +0.0071 m over 7 sequences (better on 0) | indoor_stairs +0.000+-0.000; outdoor_day_skatep +0.048+-0.000; indoor_building_lo +0.000+-0.000; forest_hard +0.000+-0.000; forest_road_1 -0.000+-0.000; outdoor_day_art_pl +0.000+-0.000; outdoor_day_penno_ +0.001+-0.000
+w-dbow2-n4-P   vs w-dbow2-n4-uni mean +0.0012 m over 7 sequences (better on 1) | indoor_stairs +0.001+-0.000; outdoor_day_skatep +0.007+-0.000; indoor_building_lo -0.001+-0.000; forest_hard -0.011+-0.000; forest_road_1 -0.002+-0.000; outdoor_day_art_pl +0.005+-0.000; outdoor_day_penno_ +0.010+-0.000
 w-dbow2-n4-oracle vs w-dbow2-n1-uni mean -0.0039 m over 7 sequences (better on 2) | indoor_stairs -0.053+-0.041; outdoor_day_skatep +0.038+-0.000; indoor_building_lo -0.000+-0.000; forest_hard +0.002+-0.000; forest_road_1 +0.014+-0.000; outdoor_day_art_pl -0.024+-0.000; outdoor_day_penno_ -0.004+-0.000
+w-dbow2-n4-oracle vs w-dbow2-n4-uni mean +0.0071 m over 7 sequences (better on 0) | indoor_stairs +0.000+-0.000; outdoor_day_skatep +0.048+-0.000; indoor_building_lo +0.000+-0.000; forest_hard +0.000+-0.000; forest_road_1 -0.000+-0.000; outdoor_day_art_pl +0.000+-0.000; outdoor_day_penno_ +0.001+-0.000
 w-dbow2-n4-uni vs w-dbow2-n1-uni mean -0.0110 m over 7 sequences (better on 3) | indoor_stairs -0.053+-0.041; outdoor_day_skatep -0.010+-0.000; indoor_building_lo -0.000+-0.000; forest_hard +0.002+-0.000; forest_road_1 +0.014+-0.000; outdoor_day_art_pl -0.024+-0.000; outdoor_day_penno_ -0.005+-0.000
 
 == quality of the online P (edges of the n4 uniform runs, all repetitions)

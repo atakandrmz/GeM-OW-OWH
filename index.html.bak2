@@ -162,7 +162,7 @@ canvas{width:100%;display:block}
   <div class="card" style="margin-top:10px" id="cardOverlay"><h2 id="overlayTitle">Running ATE of the selected configurations</h2><div style="height:320px;position:relative"><canvas id="cvOverlay" style="position:absolute;inset:0;height:100%"></canvas></div><div class="leg" id="overlayLeg"></div></div>
 </div>
 
-<script src="data/summary.js?v=202610230915"></script>
+<script src="data/summary.js?v=202610230918"></script>
 <script>
 "use strict";
 const SUM = window.SUMMARY || {seqs:[],meta:{},data:{}};
@@ -216,7 +216,7 @@ function loadCfg(seq,key,rp){
   return new Promise((res,rej)=>{
     const done=()=>{const c=window.CFGD[id]; d.configs[ck]=c; applyAlignCfg(c,S.align); res(c);};
     if(window.CFGD&&window.CFGD[id]) return done();
-    const s=document.createElement("script"); s.src="data/"+seq+"/"+fn+".js?v=202610230915"; s.onload=done;
+    const s=document.createElement("script"); s.src="data/"+seq+"/"+fn+".js?v=202610230918"; s.onload=done;
     s.onerror=()=>rej(new Error("cannot load data/"+seq+"/"+fn+".js")); document.head.appendChild(s);
   });
 }
@@ -224,7 +224,7 @@ function loadSeq(seq){
   return new Promise((res,rej)=>{
     if(window.SEQ && window.SEQ[seq]) return res(applyAlignSeq(window.SEQ[seq]));
     if(loading[seq]) return loading[seq].then(()=>res(applyAlignSeq(window.SEQ[seq])));
-    const s=document.createElement("script"); s.src="data/"+seq+".js?v=202610230915";
+    const s=document.createElement("script"); s.src="data/"+seq+".js?v=202610230918";
     loading[seq]=new Promise(r2=>{s.onload=()=>r2(window.SEQ[seq]);});
     s.onload=()=>res(applyAlignSeq(window.SEQ[seq])); s.onerror=()=>rej(new Error("cannot load data/"+seq+".js"));
     document.head.appendChild(s);

@@ -162,7 +162,7 @@ canvas{width:100%;display:block}
   <div class="card" style="margin-top:10px" id="cardOverlay"><h2 id="overlayTitle">Running ATE of the selected configurations</h2><div style="height:320px;position:relative"><canvas id="cvOverlay" style="position:absolute;inset:0;height:100%"></canvas></div><div class="leg" id="overlayLeg"></div></div>
 </div>
 
-<script src="data/summary.js?v=202610152303"></script>
+<script src="data/summary.js?v=202610230918"></script>
 <script>
 "use strict";
 const SUM = window.SUMMARY || {seqs:[],meta:{},data:{}};
@@ -216,7 +216,7 @@ function loadCfg(seq,key,rp){
   return new Promise((res,rej)=>{
     const done=()=>{const c=window.CFGD[id]; d.configs[ck]=c; applyAlignCfg(c,S.align); res(c);};
     if(window.CFGD&&window.CFGD[id]) return done();
-    const s=document.createElement("script"); s.src="data/"+seq+"/"+fn+".js?v=202610152303"; s.onload=done;
+    const s=document.createElement("script"); s.src="data/"+seq+"/"+fn+".js?v=202610230918"; s.onload=done;
     s.onerror=()=>rej(new Error("cannot load data/"+seq+"/"+fn+".js")); document.head.appendChild(s);
   });
 }
@@ -224,7 +224,7 @@ function loadSeq(seq){
   return new Promise((res,rej)=>{
     if(window.SEQ && window.SEQ[seq]) return res(applyAlignSeq(window.SEQ[seq]));
     if(loading[seq]) return loading[seq].then(()=>res(applyAlignSeq(window.SEQ[seq])));
-    const s=document.createElement("script"); s.src="data/"+seq+".js?v=202610152303";
+    const s=document.createElement("script"); s.src="data/"+seq+".js?v=202610230918";
     loading[seq]=new Promise(r2=>{s.onload=()=>r2(window.SEQ[seq]);});
     s.onload=()=>res(applyAlignSeq(window.SEQ[seq])); s.onerror=()=>rej(new Error("cannot load data/"+seq+".js"));
     document.head.appendChild(s);
@@ -306,7 +306,7 @@ function cfgRows(){
   h+=`<tr><td class="k">Configuration</td><td style="white-space:normal">${m.label||S.cfg}</td></tr>`;
   const sr=SUM.data[S.seq]&&SUM.data[S.seq][S.cfg];
   if(sr&&sr.n_rep>1) h+=`<tr><td class="k">Repetitions</td><td>${sr.n_rep} · ATE mean ${fx(sr.ate,3)} ± ${fx(sr.ate_std,3)} · best ${fx(sr.ate_best,3)} m <span class="k">(showing repetition ${S.rep})</span></td></tr>`;
-  if(m.group==="v2"||/^(v3|hybrid_v4)$/.test(m.group)) h+=`<tr><td class="k">Pose graph / points / verify</td><td>${DOFN[m.dofv]||m.dof+"-DoF"} · ${m.pts||"–"} · ss${m.ss} · ${m.verify}</td></tr>`;
+  if(m.group==="v2"||/^(v3|hybrid_v4|vpgls)$/.test(m.group)) h+=`<tr><td class="k">Pose graph / points / verify</td><td>${DOFN[m.dofv]||m.dof+"-DoF"} · ${m.pts||"–"} · ss${m.ss} · ${m.verify}</td></tr>`;
   const ms=(sm.mean_ms!==""&&sm.mean_ms!==undefined)?+sm.mean_ms:x.retr_ms;
   if(ms!==undefined&&ms!==null&&isFinite(ms)) h+=`<tr><td class="k">Retrieval time</td><td>${fx(ms,1)} ms / keyframe</td></tr>`;
   if(x.lg) h+=`<tr><td class="k">LighterGlue funnel</td><td>${x.lg.n} candidates → ${x.lg.passed} pass epipolar <span class="k">(⌀ ${fx(x.lg.matches,0)} matches, ratio ${fx(x.lg.epi_ratio,2)})</span></td></tr>`;
@@ -514,7 +514,7 @@ async function selectSeq(seq){
   $("status").textContent="";
   const keys=CFGS.filter(k=>D.cfgkeys?D.cfgkeys.indexOf(k)>=0:!!D.configs[k]);
   const opt=k=>`<option value="${k}">${cfgLabel(k)}</option>`;
-  $("selCfg").innerHTML=[["v1","Original methods (v1)"],["v2","v2 experiments"],["v3","v3 \u00b7 PGLS gate (online, VIO depth)"],["hybrid_v4","hybrid_v4 \u00b7 DBoW2 + 2nd retriever, one gate"]].map(([g,t])=>{const ks=keys.filter(k=>CM[k]&&CM[k].group===g); return ks.length?`<optgroup label="${t}">${ks.map(opt).join("")}</optgroup>`:"";}).join("");
+  $("selCfg").innerHTML=[["v1","Original methods (v1)"],["v2","v2 experiments"],["v3","v3 \u00b7 PGLS gate (online, VIO depth)"],["hybrid_v4","hybrid_v4 \u00b7 DBoW2 + 2nd retriever, one gate"],["vpgls","v_pgls \u00b7 DBoW2 edges: weight 1 vs weight P"]].map(([g,t])=>{const ks=keys.filter(k=>CM[k]&&CM[k].group===g); return ks.length?`<optgroup label="${t}">${ks.map(opt).join("")}</optgroup>`:"";}).join("");
   if(keys.indexOf(S.cfg)<0) S.cfg=keys[0]; $("selCfg").value=S.cfg;
   fillSeqTable(); alignButtons(); await selectCfg(S.cfg);
 }
@@ -542,7 +542,7 @@ function visibleCfgs(){
   return CFGS.filter(k=>{ const m=CM[k]; if(!m) return false;
     if(FLT.group!=="all"&&m.group!==FLT.group) return false;
     if(FLT.dof!=="all"&&String(m.dofv||m.dof)!==FLT.dof) return false;
-    if(m.group==="v2"||/^(v3|hybrid_v4)$/.test(m.group)){
+    if(m.group==="v2"||/^(v3|hybrid_v4|vpgls)$/.test(m.group)){
       if(FLT.wh!=="all"&&m.wh!==FLT.wh) return false;
       if(FLT.pts!=="all"&&m.pts!==FLT.pts) return false;
       if(FLT.ss!=="all"&&String(m.ss)!==FLT.ss) return false;
@@ -580,12 +580,12 @@ function heat(v,lo,hi,goodLow){ // -> background colour
   const r=Math.round(248*(1-f)+63*f), g=Math.round(81*(1-f)+185*f), b=Math.round(73*(1-f)+80*f);
   return `rgba(${r},${g},${b},.28)`;
 }
-function uniq(f){ return [...new Set(CFGS.map(k=>CM[k]).filter(m=>m&&(m.group==="v2"||/^(v3|hybrid_v4)$/.test(m.group))).map(f))].filter(v=>v!==undefined&&v!=="-"); }
+function uniq(f){ return [...new Set(CFGS.map(k=>CM[k]).filter(m=>m&&(m.group==="v2"||/^(v3|hybrid_v4|vpgls)$/.test(m.group))).map(f))].filter(v=>v!==undefined&&v!=="-"); }
 function buildFilters(){
   const el=$("cmpFilters"); if(el.dataset.built) return; el.dataset.built="1";
   const sel=(id,label,opts)=>`<label>${label} <select data-f="${id}"><option value="all">all</option>${opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join("")}</select></label>`;
   const whs=uniq(m=>m.wh).map(w=>[w,{gem:"GeM",ow:"GeM-OW",owh:"GeM-OWH"}[w]||w]);
-  el.innerHTML=sel("group","set",[["v1","original (v1)"],["v2","v2 experiments"],["v3","v3 PGLS gate"],["hybrid_v4","hybrid_v4"]])+sel("dof","pose graph",[["4","4-DoF"],["6","6-DoF (VINS weights)"],["6m","6-DoF (matched weights)"]])+
+  el.innerHTML=sel("group","set",[["v1","original (v1)"],["v2","v2 experiments"],["v3","v3 PGLS gate"],["hybrid_v4","hybrid_v4"],["vpgls","vpgls"]])+sel("dof","pose graph",[["4","4-DoF"],["6","6-DoF (VINS weights)"],["6m","6-DoF (matched weights)"]])+
     sel("wh","pooling",whs)+sel("pts","points",uniq(m=>m.pts).map(p=>[p,p]))+sel("ss","sign-split",[["0","off"],["1","on"]])+
     sel("verify","verification",uniq(m=>m.verify).map(p=>[p,p]))+`<label>search <input id="fq" placeholder="text…" style="background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:4px 8px"></label><button id="fReset">reset filters</button><span class="k" id="fCount"></span>`;
   el.querySelectorAll("select").forEach(x=>x.onchange=()=>{FLT[x.dataset.f]=x.value; buildCmp();});
@@ -722,5 +722,110 @@ window.addEventListener("resize",()=>{ if($("app").style.display!=="none") rende
   applyAlignSummary(); alignButtons(); S.seq=SUM.seqs[0]; selectSeq(S.seq); requestAnimationFrame(tick);
 })();
 </script>
+<!--vpgls-2x2-->
+<style>
+#q22-btn{position:fixed;right:14px;bottom:14px;z-index:9998;background:#1f6feb;color:#fff;border:1px solid #1f6feb;border-radius:8px;padding:7px 12px;font:600 13px system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.45)}
+#q22{position:fixed;right:14px;bottom:56px;z-index:9999;width:min(760px,calc(100vw - 28px));max-height:calc(100vh - 80px);overflow:auto;background:var(--panel,#171c23);color:var(--text,#e6e9ee);border:1px solid var(--line,#2a323d);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.6);padding:10px 12px;font:13px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#q22[hidden]{display:none}
+#q22 h3{margin:0 0 2px;font-size:14px}
+#q22 .q-sub{color:var(--muted,#8c97a6);font-size:12px;margin-bottom:8px}
+#q22 .q-x{float:right;background:transparent;border:0;color:var(--muted,#8c97a6);font-size:18px;cursor:pointer;line-height:1}
+#q22 .q-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){#q22 .q-cols{grid-template-columns:1fr}}
+#q22 select{width:100%;margin:0 0 4px;background:var(--panel2,#1d232c);color:var(--text,#e6e9ee);border:1px solid var(--line,#2a323d);border-radius:6px;padding:4px 6px;font:inherit}
+#q22 .q-grid{display:grid;grid-template-columns:62px 1fr 1fr;grid-template-rows:auto auto auto;gap:3px;margin:6px 0}
+#q22 .q-h{color:var(--muted,#8c97a6);font-size:11px;text-align:center;align-self:end;padding:2px}
+#q22 .q-rh{color:var(--muted,#8c97a6);font-size:11px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.15}
+#q22 .q-c{border-radius:6px;padding:8px 4px;text-align:center;min-height:62px;border:1px solid transparent}
+#q22 .q-c b{display:block;font-size:20px;line-height:1.1}
+#q22 .q-c span{display:block;font-size:11px;opacity:.9}
+#q22 .q-tpv{background:rgba(63,185,80,.18);border-color:#3fb950;color:#7ee08f}
+#q22 .q-fpv{background:rgba(248,81,73,.18);border-color:#f85149;color:#ff8f89}
+#q22 .q-tpr{background:rgba(240,180,41,.16);border-color:#f0b429;color:#f3cd6b}
+#q22 .q-fpr{background:rgba(110,125,145,.18);border-color:#6b7684;color:#b3bdca}
+#q22 table.q-m{width:100%;border-collapse:collapse;margin-top:4px}
+#q22 table.q-m td{padding:2px 4px;border-bottom:1px solid var(--line,#2a323d);font-size:12px}
+#q22 table.q-m td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+#q22 .q-note{color:var(--muted,#8c97a6);font-size:11px;margin-top:8px}
+</style>
+<button id="q22-btn" type="button" title="Retrieval x geometric verification (2x2 table)">2&times;2</button>
+<div id="q22" hidden>
+  <button class="q-x" type="button" id="q22-x" aria-label="close">&times;</button>
+  <h3>Retrieval &times; geometric verification</h3>
+  <div class="q-sub">Every proposed loop pair is either a true loop or a false loop (ground-truth pgls &ge; 0.5), and the geometric check either verifies or rejects it. Compare two configurations side by side.</div>
+  <div class="q-cols"><div id="q22-A"></div><div id="q22-B"></div></div>
+  <div class="q-note">Counts are means over the repetitions. Pairs without a ground-truth label are left out of the four cells.</div>
+</div>
+<script>
+(function(){
+  var S=null;
+  function $(id){return document.getElementById(id)}
+  function fmt(v){if(v==null||isNaN(v))return "–";return Math.abs(v-Math.round(v))<0.05?String(Math.round(v)):v.toFixed(1)}
+  function pct(a,b){return b>0?(100*a/b).toFixed(1)+"%":"–"}
+  function grpName(g){return {v1:"Original methods (v1)",v2:"v2 experiments",v3:"v3 PGLS gate",hybrid_v4:"hybrid_v4",vpgls:"v_pgls (weights)"}[g]||g}
+  function pick(seq,key){
+    var seqs=seq==="*"?S.seqs:[seq], t={tpv:0,fpv:0,tpr:0,fpr:0,n:0,ate:0,open:0,k:0};
+    seqs.forEach(function(s){
+      var d=S.data[s]&&S.data[s][key]; if(!d)return;
+      t.tpv+=d.acc.tp; t.fpv+=d.acc.fp; t.tpr+=d.rej.tp; t.fpr+=d.rej.fp; t.n+=d.det.n;
+      if(d.ate!=null){t.ate+=d.ate; t.open+=(d.ate_open||0); t.k++}
+    });
+    return t;
+  }
+  function draw(id,seq,key){
+    var el=$(id), t=pick(seq,key), lab=t.tpv+t.fpv+t.tpr+t.fpr, trueN=t.tpv+t.tpr, falseN=t.fpv+t.fpr;
+    var cfg=S.cfgs.filter(function(c){return c.key===key})[0]||{};
+    if(!lab&&!t.n){el.querySelector(".q-out").innerHTML="<div class='q-note'>no data for this choice</div>";return}
+    var h="<div class='q-grid'><div></div><div class='q-h'>Verified</div><div class='q-h'>Rejected</div>"+
+      "<div class='q-rh'>true loop proposed</div>"+
+      "<div class='q-c q-tpv'><b>"+fmt(t.tpv)+"</b><span>applied, correct</span><span>"+pct(t.tpv,trueN)+" of true</span></div>"+
+      "<div class='q-c q-tpr'><b>"+fmt(t.tpr)+"</b><span>missed true loop</span><span>"+pct(t.tpr,trueN)+" of true</span></div>"+
+      "<div class='q-rh'>false loop proposed</div>"+
+      "<div class='q-c q-fpv'><b>"+fmt(t.fpv)+"</b><span>applied, WRONG</span><span>"+pct(t.fpv,falseN)+" of false</span></div>"+
+      "<div class='q-c q-fpr'><b>"+fmt(t.fpr)+"</b><span>correctly rejected</span><span>"+pct(t.fpr,falseN)+" of false</span></div></div>"+
+      "<table class='q-m'>"+
+      "<tr><td>Proposed pairs</td><td>"+fmt(t.n)+"</td></tr>"+
+      "<tr><td>Retrieval precision (true / proposed)</td><td>"+pct(trueN,lab)+"</td></tr>"+
+      "<tr><td>Applied precision (TP / applied)</td><td>"+pct(t.tpv,t.tpv+t.fpv)+"</td></tr>"+
+      "<tr><td>True loops kept by the check</td><td>"+pct(t.tpv,trueN)+"</td></tr>"+
+      "<tr><td>False loops stopped by the check</td><td>"+pct(t.fpr,falseN)+"</td></tr>"+
+      (t.k?"<tr><td>"+(seq==="*"?"ATE, mean over sequences":"ATE")+" (open-loop)</td><td>"+(t.ate/t.k).toFixed(3)+" m ("+(t.open/t.k).toFixed(3)+")</td></tr>":"")+
+      "</table>";
+    el.querySelector(".q-out").innerHTML=h;
+    el.querySelector(".q-ttl").textContent=cfg.label||key;
+  }
+  function build(id,defSeq,defKey){
+    var el=$(id), h="<select class='q-s'><option value='*'>all sequences (sum)</option>"+S.seqs.map(function(s){return "<option value='"+s+"'>"+s.replace(/^spot_/,"")+"</option>"}).join("")+"</select>";
+    var groups={}, order=[];
+    S.cfgs.forEach(function(c){var g=c.group||"?"; if(!groups[g]){groups[g]=[];order.push(g)} groups[g].push(c)});
+    // v_pgls first, then the others
+    order.sort(function(a,b){return (a==="vpgls"?0:1)-(b==="vpgls"?0:1)});
+    h+="<select class='q-k'>"+order.map(function(g){return "<optgroup label='"+grpName(g)+"'>"+groups[g].map(function(c){return "<option value='"+c.key+"'>"+(c.short||c.key)+"</option>"}).join("")+"</optgroup>"}).join("")+"</select>";
+    h+="<div class='q-ttl k' style='color:var(--muted,#8c97a6);font-size:11px;min-height:1.4em'></div><div class='q-out'></div>";
+    el.innerHTML=h;
+    var ss=el.querySelector(".q-s"), kk=el.querySelector(".q-k");
+    ss.value=defSeq; if(defKey)kk.value=defKey;
+    function go(){draw(id,ss.value,kk.value)}
+    ss.onchange=go; kk.onchange=go; go();
+  }
+  function init(){
+    S=window.SUMMARY; if(!S||!S.cfgs||!S.cfgs.length)return false;
+    var keys=S.cfgs.map(function(c){return c.key});
+    var A=keys.indexOf("w-dbow2-n4-uni")>=0?"w-dbow2-n4-uni":keys[0];
+    var B=keys.indexOf("w-dbow2-n4-P")>=0?"w-dbow2-n4-P":(keys[1]||keys[0]);
+    build("q22-A","*",A); build("q22-B","*",B);
+    // keep the two sequence selectors in step
+    var sa=$("q22-A").querySelector(".q-s"), sb=$("q22-B").querySelector(".q-s");
+    sa.addEventListener("change",function(){sb.value=sa.value; sb.onchange()});
+    sb.addEventListener("change",function(){sa.value=sb.value; sa.onchange()});
+    return true;
+  }
+  var ready=false;
+  function open(){ if(!ready){ready=init(); if(!ready){var n=0;var iv=setInterval(function(){if(init()||++n>60){clearInterval(iv);ready=true}},250)}} $("q22").hidden=false }
+  $("q22-btn").onclick=function(){ if($("q22").hidden) open(); else $("q22").hidden=true };
+  $("q22-x").onclick=function(){$("q22").hidden=true};
+})();
+</script>
+<!--/vpgls-2x2-->
 </body>
 </html>

@@ -71,10 +71,11 @@ canvas{width:100%;display:block}
 <body>
 <header>
   <h1>Loop-closure retrieval dashboard <span class="k" style="font-size:11px;font-weight:400">v7</span></h1>
-  <div class="tabs"><button class="tab on" id="tab-ex">Sequence explorer</button><button class="tab" id="tab-cmp">Compare configurations</button></div>
+  <div class="tabs"><button class="tab on" id="tab-pgm">PGLS-mono</button><button class="tab" id="tab-ex">Sequence explorer</button><button class="tab" id="tab-cmp">Compare configurations</button></div>
   <span class="k" id="status"></span>
 </header>
 
+<!--pglsmono-tab--><div id="pgm"></div>
 <div id="app">
   <div class="col">
     <div class="card" id="left-top">
@@ -827,5 +828,10 @@ window.addEventListener("resize",()=>{ if($("app").style.display!=="none") rende
 })();
 </script>
 <!--/vpgls-2x2-->
+<!--pglsmono-tab-->
+<link rel="stylesheet" href="pglsmono/pgm.css?v=202611270404">
+<script src="pglsmono/data/index.js?v=202611270404"></script>
+<script src="pglsmono/pgm.js?v=202611270404"></script>
+<script src="pglsmono/pgmkl.js?v=202611270404"></script>
 </body>
 </html>

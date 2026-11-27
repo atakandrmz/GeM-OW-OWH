@@ -1,0 +1,79 @@
+/* PGLS-mono tab -- uses the dashboard's colour tokens (--bg, --panel, --line, ...) */
+#pgm{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:10px;padding:10px;height:calc(100vh - 48px);min-height:560px;overflow:hidden}
+#pgm .col{min-width:0;min-height:0}
+#pgm .gsel{display:grid;grid-template-columns:auto 1fr;gap:6px 8px;align-items:center;margin-bottom:8px}
+#pgm .gsel label{color:var(--muted)}
+#pgm .gseg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+#pgm .gseg button{border:0;border-radius:0;padding:4px 10px;background:var(--panel2);color:var(--muted)}
+#pgm .gseg button+button{border-left:1px solid var(--line)}
+#pgm .gseg button.on{background:#1f6feb;color:#fff}
+#gLeftTop{flex:0 0 auto;overflow:auto;max-height:58%}
+#gCur{flex:1 1 auto;display:flex;flex-direction:column}
+#gCurBox{flex:1 1 auto;min-height:120px}
+#gTraj{flex:1 1 45%;display:flex;flex-direction:column;min-height:0}
+#gBot{flex:1 1 55%;display:flex;flex-direction:column;min-height:0}
+#gBotGrid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+#gPlots{display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:6px;min-height:0;min-width:0}
+#gPlots .cv{position:relative;min-height:0}
+#gPlots canvas{position:absolute;inset:0;height:100%;width:100%}
+#gImgs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:6px;min-height:0;min-width:0}
+.gimg{border:3px solid var(--line);border-radius:6px;background:#0b0e12;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:0}
+.gimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
+.gimg .cap{position:absolute;left:4px;top:4px;background:rgba(0,0,0,.7);padding:1px 6px;border-radius:4px;font-size:11px;max-width:calc(100% - 8px)}
+.gimg .vals{position:absolute;left:4px;bottom:4px;right:4px;display:flex;gap:4px;font-size:11px}
+.gimg .vals span{background:rgba(0,0,0,.72);border-radius:4px;padding:1px 5px;font-variant-numeric:tabular-nums}
+.gimg .empty{color:var(--muted);font-size:12px;text-align:center;padding:8px}
+.gbar{height:10px;border-radius:2px;margin-top:6px}
+.gticks{position:relative;height:14px;font-size:10px;color:var(--muted)}
+.gticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+#pgm .ghead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+#pgm .ghead h2{margin:0}
+#pgm .chip{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;margin-right:4px}
+#pgm input[type=number]{width:56px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:4px 6px;font:inherit}
+#gTip{position:fixed;pointer-events:none;background:rgba(15,19,24,.95);border:1px solid var(--line);border-radius:6px;padding:3px 7px;font-size:12px;z-index:50;display:none;white-space:nowrap}
+@media (max-width:1100px){#pgm{grid-template-columns:1fr;height:auto}#gLeftTop{max-height:none}#gBotGrid{grid-template-columns:1fr}#gPlots{height:420px}#gImgs{height:420px}#gTraj .cv{min-height:360px}#gCurBox{min-height:240px}}
+#pgm td{white-space:normal;vertical-align:top}
+#pgm td:first-child{width:46%}
+#pgm .gsel select{width:100%;min-width:0}
+#gLeftTop table{table-layout:fixed}
+#gRead{min-height:20px;margin-bottom:4px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pgm .ctl{flex-wrap:wrap}
+#pgm .ctl input[type=range]{width:auto;flex:1 1 160px;min-width:120px}
+#pgm .ghelp{color:var(--muted);font-size:12px;line-height:1.35;margin:-2px 0 4px}
+#pgm .gsel select{font-size:12px}
+.gimg .vals{flex-wrap:wrap}
+.gimg .vals span{white-space:nowrap}
+#pgm table.gkl td,#pgm table.gkl th{font-size:12px;padding:2px 4px;white-space:nowrap;text-align:left}
+#pgm table.gkl{table-layout:auto}
+#pgm table.gkl td:first-child{width:auto}
+#pgm .gkn{font-weight:600}
+#pgm details summary{cursor:pointer;margin:4px 0}
+.gimg .cap{max-width:calc(100% - 96px)}
+.gimg .gstars{position:absolute;top:3px;right:5px;display:flex;gap:1px;z-index:2;padding:2px 3px;border-radius:6px;background:rgba(0,0,0,.35)}
+.gimg .gstar{display:flex;flex-direction:column;align-items:center;width:24px}
+.gimg .gstar svg{width:24px;height:24px;display:block}
+.gimg .gstar path{fill:rgba(255,255,255,.06);stroke:rgba(200,205,212,.55);stroke-width:1.4;stroke-linejoin:round}
+.gimg .gstar.on path{fill:#f8d33a;stroke:#1a1208;stroke-width:1.8;filter:drop-shadow(0 0 3px rgba(248,211,58,.65))}
+.gimg .gstar i{font-style:normal;font-size:9px;line-height:9px;color:#8c97a6;font-weight:600}
+.gimg .gstar.on i{color:#f8d33a}
+.gimg .gstars.all{box-shadow:0 0 0 1px #f8d33a inset}
+#gAlign button{padding:3px 7px}
+/* agreement tab */
+#pgk{padding:10px;overflow:auto;height:calc(100vh - 48px)}
+#pgk .kh{color:var(--muted);font-size:12px;line-height:1.45;margin-top:4px}
+#pgk .kh3{font-size:12px;margin:2px 0 6px;font-weight:600}
+#pgk .kgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#pgk table.ktab td,#pgk table.ktab th{font-size:12px;padding:4px 7px;text-align:right;white-space:nowrap;vertical-align:middle}
+#pgk table.ktab td:first-child,#pgk table.ktab th:first-child,#pgk #kSum td:nth-child(2),#pgk #kSum th:nth-child(2){text-align:left}
+#pgk #kSum td:nth-child(2){white-space:normal}
+#pgk .kbest{background:rgba(63,185,80,.16);color:#7ee08f}
+#pgk .kworst{background:rgba(248,81,73,.12);color:#ff8f89}
+#pgk .kdiv td{opacity:.55}
+#pgk .kdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+#pgk .kbar{height:5px;background:#202833;border-radius:3px;margin-bottom:3px;min-width:120px}
+#pgk .kbar i{display:block;height:100%;border-radius:3px}
+#pgk .gseg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+#pgk .gseg button{border:0;border-radius:0;padding:4px 10px;background:var(--panel2);color:var(--muted)}
+#pgk .gseg button+button{border-left:1px solid var(--line)}
+#pgk .gseg button.on{background:#1f6feb;color:#fff}
+@media (max-width:1100px){#pgk .kgrid{grid-template-columns:1fr}}
